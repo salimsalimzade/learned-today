@@ -1,0 +1,67 @@
+@layer ui {
+  .collapsible {
+    border-block: var(--hairline) solid var(--border);
+  }
+  .collapsible + .collapsible {
+    border-top: 0;
+  }
+
+  .trigger {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: var(--control-h);
+    margin: 0;
+    padding: var(--space-2) 0;
+    border: 0;
+    background: none;
+    color: var(--text);
+    font: var(--text-ui);
+    text-align: start;
+    cursor: pointer;
+  }
+  .trigger:focus-visible {
+    outline-offset: -2px;
+    border-radius: var(--radius-sm);
+  }
+  .trigger > [data-icon] {
+    color: var(--text-muted);
+    transition: transform var(--fade-duration) var(--fade-easing);
+  }
+  .trigger[data-expanded] > [data-icon] {
+    transform: rotate(180deg);
+  }
+
+  .content {
+    overflow: hidden;
+    animation: fade-in var(--fade-duration) var(--fade-easing);
+  }
+  .content[data-closed] {
+    animation: fade-out var(--fade-duration) var(--fade-easing);
+  }
+
+  .body {
+    padding-bottom: var(--space-4);
+    font: var(--text-body-sm);
+  }
+  .body > * {
+    margin: 0;
+  }
+  .body > * + * {
+    margin-top: var(--space-2);
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+}

@@ -1,0 +1,111 @@
+/* The post body. Children arrive as rendered Markdown, so these are element selectors. */
+.prose {
+  color: var(--text);
+  font: var(--text-body);
+  overflow-wrap: break-word;
+}
+.prose > * {
+  margin: 0;
+}
+.prose > * + * {
+  margin-top: var(--space-5);
+}
+.prose > figure,
+.prose > * + figure {
+  margin-block: var(--space-6);
+}
+
+.prose h2 {
+  margin-top: var(--space-8);
+  font: var(--text-heading);
+}
+.prose h3 {
+  margin-top: var(--space-6);
+  font: var(--text-ui);
+}
+
+.prose a {
+  color: var(--link);
+  text-decoration-line: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose strong {
+  font-weight: 600;
+}
+
+.prose :not(pre) > code {
+  padding: 1px var(--space-1);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  font-variant-ligatures: none;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.prose ul {
+  padding-inline-start: var(--space-6);
+  list-style-type: "–  ";
+}
+.prose li + li {
+  margin-top: var(--space-2);
+}
+
+/* Ordered lists are "steps": 01, 02… in the margin, ruled between. */
+.prose ol {
+  list-style: none;
+  padding: 0;
+  counter-reset: step;
+}
+.prose ol > li {
+  position: relative;
+  counter-increment: step;
+  padding-inline-start: var(--space-10);
+}
+.prose ol > li::before {
+  content: counter(step, decimal-leading-zero);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--text-muted);
+  font: 400 13px / 28px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.prose ol > li + li {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--hairline) solid var(--border);
+}
+.prose ol > li + li::before {
+  top: var(--space-3);
+}
+
+.prose blockquote {
+  padding-inline-start: var(--space-4);
+  border-inline-start: 2px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+.prose hr {
+  height: 0;
+  border: 0;
+  border-top: var(--hairline) solid var(--border);
+}
+
+.prose table {
+  border-collapse: collapse;
+  font: var(--text-body-sm);
+}
+.prose :is(th, td) {
+  padding: var(--space-1) var(--space-3);
+  border: var(--hairline) solid var(--border);
+  text-align: start;
+}

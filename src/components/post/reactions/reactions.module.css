@@ -1,0 +1,58 @@
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pill {
+  appearance: none;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: var(--pill-h);
+  margin: 0;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-muted);
+  font: 500 13px / 20px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background-color var(--fade-duration) var(--fade-easing),
+    border-color var(--fade-duration) var(--fade-easing),
+    color var(--fade-duration) var(--fade-easing);
+}
+/* 32px to look at, 40px to hit. */
+.pill::before {
+  content: "";
+  position: absolute;
+  inset: calc((var(--pill-h) - var(--target-min)) / 2) 0;
+}
+.pill:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+.pill:is([data-pressed], [aria-pressed="true"]) {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.add {
+  composes: pill;
+  width: var(--target-min);
+  padding: 0;
+  justify-content: center;
+}
+
+.emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 400;
+}

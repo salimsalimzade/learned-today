@@ -1,0 +1,105 @@
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--target-min);
+  font: var(--text-caption);
+}
+
+.title {
+  margin: var(--space-4) 0 0;
+  font: var(--text-display);
+  letter-spacing: var(--tracking-display);
+}
+.description {
+  margin: var(--space-2) 0 0;
+  color: var(--text-muted);
+  font: var(--text-body-sm);
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  margin-top: var(--space-10);
+}
+
+.specimen-title {
+  margin: 0;
+  font: 600 15px / 24px var(--font-sans);
+}
+.note {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font: var(--text-caption);
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.single {
+  margin-top: var(--space-3);
+}
+
+/* Each panel sets its own data-theme, so the colour tokens switch inside it. */
+.panel {
+  position: relative;
+  min-width: 0;
+  padding: var(--space-8) var(--space-5) var(--space-5);
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.panel-label {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-3);
+  color: var(--text-muted);
+  font: var(--text-meta);
+}
+
+.stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+.panel[data-stack] .stage {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.cell[data-wide] {
+  align-items: stretch;
+  width: 100%;
+}
+.cell-label {
+  color: var(--text-muted);
+  font: var(--text-meta);
+}
+
+@media (max-width: 767.98px) {
+  .pair {
+    grid-template-columns: 1fr;
+  }
+}

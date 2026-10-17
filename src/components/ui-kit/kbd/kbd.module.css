@@ -1,0 +1,39 @@
+@layer ui {
+  .kbd {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--space-1);
+    border: var(--hairline) solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+    font: var(--text-kbd);
+    font-variant-ligatures: none;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  .combo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--text-muted);
+    font: 400 12px / 16px var(--font-mono);
+  }
+
+  .hint {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  @media (hover: none) {
+    .hint {
+      display: none;
+    }
+  }
+}

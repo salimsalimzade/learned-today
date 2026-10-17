@@ -1,0 +1,91 @@
+@layer ui {
+  .list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    min-height: var(--chip-h);
+    margin: 0;
+    padding: 0 var(--space-2);
+    border: var(--hairline) solid var(--border);
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    font: var(--text-meta);
+    font-variant-ligatures: none;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      border-color var(--fade-duration) var(--fade-easing),
+      color var(--fade-duration) var(--fade-easing),
+      background-color var(--fade-duration) var(--fade-easing);
+  }
+  /* 28px to look at, 40px to hit. */
+  .tag::before {
+    content: "";
+    position: absolute;
+    inset: calc((var(--chip-h) - var(--target-min)) / 2) 0;
+  }
+  .tag:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .tag[data-kind="topic"] {
+    color: var(--text);
+    font: 500 13px / 20px var(--font-sans);
+  }
+
+  .tag:is([data-pressed], [aria-pressed="true"], [aria-current="page"]) {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Static chips (inside an input) aren't buttons. */
+  .tag[data-static] {
+    cursor: default;
+    color: var(--text);
+  }
+  .tag[data-static]::before {
+    display: none;
+  }
+
+  /* In a meta line: just the words. */
+  .tag[data-variant="plain"] {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+  }
+  .tag[data-variant="plain"]::before {
+    display: none;
+  }
+  .tag[data-variant="plain"]:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .hash {
+    color: var(--text-muted);
+  }
+  .tag:is([data-pressed], [aria-pressed="true"], [aria-current="page"]) .hash {
+    color: inherit;
+  }
+
+  .count {
+    margin-inline-start: var(--space-1);
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+}

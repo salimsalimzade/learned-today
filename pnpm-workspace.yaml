@@ -1,0 +1,3 @@
+allowBuilds:
+  # postinstall runs `lefthook install` to set up the git hooks (it skips this when CI is set).
+  lefthook: true

@@ -1,0 +1,26 @@
+/* The page frame: header, the route, footer. */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+.body {
+  flex: 1;
+}
+
+/* "Skip to content": hidden until focused with the keyboard. */
+.skip {
+  position: absolute;
+  top: -100px;
+  left: var(--space-2);
+  z-index: var(--layer-toast);
+  padding: var(--space-2) var(--space-3);
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  color: var(--text);
+  font: var(--text-ui);
+}
+.skip:focus {
+  top: var(--space-2);
+}

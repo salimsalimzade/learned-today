@@ -1,0 +1,22 @@
+/* Topic, tag and author pages. */
+.tabs {
+  margin-top: var(--space-8);
+}
+.panel {
+  padding-top: var(--space-5);
+}
+
+/* "#css" as a page title: mono, a little tighter. */
+.tag-title {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-ligatures: none;
+}
+
+.related {
+  margin-top: var(--space-6);
+}
+.body {
+  margin-top: var(--space-3);
+}

@@ -1,0 +1,25 @@
+/* Sticks under the site header while its day's notes scroll past. */
+.day-head {
+  position: sticky;
+  top: var(--header-h);
+  z-index: var(--layer-sticky);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-2);
+  background: var(--bg);
+  border-bottom: var(--hairline) solid var(--border-strong);
+}
+
+.title {
+  margin: 0;
+  font: 600 15px / 24px var(--font-sans);
+}
+
+.date {
+  color: var(--text-muted);
+  font: var(--text-meta);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

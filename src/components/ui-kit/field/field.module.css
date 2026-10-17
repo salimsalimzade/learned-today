@@ -1,0 +1,52 @@
+/* Shared by every form control: the column, its label, helper and error text, and the counter. */
+
+@layer ui {
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+  }
+
+  .label {
+    color: var(--text);
+    font: var(--text-ui);
+  }
+  .label[data-disabled] {
+    color: var(--text-muted);
+  }
+
+  .optional {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .description {
+    margin: 0;
+    color: var(--text-muted);
+    font: var(--text-caption);
+  }
+
+  .error {
+    margin: 0;
+    color: var(--error);
+    font: var(--text-caption);
+  }
+
+  .foot {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .counter {
+    margin-inline-start: auto;
+    color: var(--text-muted);
+    font: 400 12px / 20px var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .counter[data-over] {
+    color: var(--error);
+  }
+}

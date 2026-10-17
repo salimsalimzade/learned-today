@@ -1,0 +1,16 @@
+/* Home feed: days of notes and the "older notes" button. */
+.day + .day {
+  margin-top: var(--space-10);
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-10);
+}
+
+@media (max-width: 639.98px) {
+  .more-button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,228 @@
+/* Block editor for the post body (TipTap / ProseMirror). */
+.editor {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  transition: border-color var(--fade-duration) var(--fade-easing);
+}
+.editor:hover {
+  border-color: var(--text-muted);
+}
+.editor:has(.content:focus) {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+.editor[data-invalid] {
+  border-color: var(--error);
+}
+
+.toolbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 var(--space-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+  background: var(--bg-raised);
+  border-bottom: var(--hairline) solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toolbar buttons are ghost buttons; pressed ones (bold on, list on…) use accent-soft. */
+.tool {
+  flex: none;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+.tool:hover {
+  color: var(--text);
+}
+.tool:focus-visible {
+  outline-offset: -2px;
+}
+.tool:is([aria-pressed="true"], [data-pressed]) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.block-trigger {
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  color: var(--text);
+}
+.block-label {
+  display: none;
+}
+@media (min-width: 600px) {
+  .block-trigger {
+    min-width: 136px;
+    justify-content: flex-start;
+  }
+  .block-label {
+    display: inline;
+    flex: 1;
+    text-align: start;
+  }
+}
+
+.sep {
+  flex: none;
+  width: 1px;
+  height: 20px;
+  margin: 0 var(--space-1);
+  background: var(--border);
+}
+
+.mount {
+  display: contents;
+}
+
+/* The ProseMirror element (also gets the prose class). */
+.content {
+  flex: 1;
+  min-height: 320px;
+  padding: var(--space-4);
+  outline: none;
+  caret-color: var(--text);
+}
+.content :is(p, h2, li, blockquote):global(.is-empty)::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.content > figure {
+  margin-block: var(--space-5);
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-top: var(--hairline) solid var(--border);
+  color: var(--text-muted);
+  font: 400 12px / 20px var(--font-mono);
+  font-variant-ligatures: none;
+}
+.foot code {
+  color: var(--text);
+  font: inherit;
+}
+
+/* Link popover */
+.link-pop {
+  width: 300px;
+}
+.link-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* The "/" menu and the toolbar's block menu share this list. */
+.menu {
+  box-sizing: border-box;
+  z-index: var(--layer-popover);
+  width: min(304px, calc(100vw - 2 * var(--gutter)));
+  max-height: 392px;
+  overflow: auto;
+  margin: 0;
+  padding: var(--space-1);
+  list-style: none;
+  background: var(--bg-raised);
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--radius);
+  animation: fade-in var(--fade-duration) var(--fade-easing);
+}
+.menu[data-closed] {
+  animation: fade-out var(--fade-duration) var(--fade-easing);
+}
+.menu:focus-visible {
+  outline: none;
+}
+
+.menu-group {
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  color: var(--text-muted);
+  font: 400 12px / 16px var(--font-mono);
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 48px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+.menu-item[data-highlighted] {
+  background: var(--bg-hover);
+}
+
+.menu-icon {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.menu-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+.menu-label {
+  font: 500 15px / 20px var(--font-sans);
+}
+.menu-description {
+  color: var(--text-muted);
+  font: var(--text-caption);
+}
+.menu-key {
+  flex: none;
+  color: var(--text-muted);
+  font: 400 12px / 16px var(--font-mono);
+  font-variant-ligatures: none;
+}
+
+@media (max-width: 639.98px) {
+  .content {
+    min-height: 240px;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}

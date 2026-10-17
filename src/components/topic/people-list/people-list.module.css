@@ -1,0 +1,30 @@
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 48px;
+  padding: var(--space-1) 0;
+  border-bottom: var(--hairline) solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+.person:hover .name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.name {
+  flex: 1;
+  font: var(--text-ui);
+}
+
+.count {
+  color: var(--text-muted);
+  font: 400 12px / 20px var(--font-mono);
+}

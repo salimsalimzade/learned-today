@@ -1,0 +1,12 @@
+.providers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Key hints mean nothing on touch screens. */
+@media (hover: none) {
+  .hover-only {
+    display: none;
+  }
+}

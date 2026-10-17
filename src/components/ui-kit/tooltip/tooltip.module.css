@@ -1,0 +1,37 @@
+@layer ui {
+  .tooltip {
+    box-sizing: border-box;
+    z-index: var(--layer-popover);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: 240px;
+    padding: var(--space-1) var(--space-2);
+    background: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    border-radius: var(--radius-sm);
+    font: var(--text-caption);
+    animation: fade-in var(--fade-duration) var(--fade-easing);
+  }
+  .tooltip[data-closed] {
+    animation: fade-out var(--fade-duration) var(--fade-easing);
+  }
+
+  /* A key hint inside the inverted tooltip. */
+  .tooltip > [data-kbd] {
+    background: transparent;
+    color: inherit;
+    border-color: var(--text-muted);
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+}

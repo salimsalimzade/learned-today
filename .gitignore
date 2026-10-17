@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+
+# Build output (Nitro / SolidStart / Vite)
+dist
+.output
+.nitro
+.solid
+.vinxi
+.vercel
+.netlify
+
+# Cloudflare Workers: wrangler's local state and local secrets
+.wrangler
+.dev.vars
+.dev.vars.*
+
+# Env files (any folder, including supabase/functions/.env)
+.env
+.env.*
+!.env.example
+
+# Supabase CLI local state
+supabase/.branches
+supabase/.temp
+
+# Logs and caches
+*.log
+*.tsbuildinfo
+.cache
+coverage
+
+# Lefthook personal overrides
+lefthook-local.yml
+.lefthook-local.yml
+
+# Editors and OS: share the project's VS Code settings, nothing else
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db

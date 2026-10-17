@@ -1,0 +1,100 @@
+@layer ui {
+  .region {
+    position: fixed;
+    z-index: var(--layer-toast);
+    inset: auto 0 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    padding: var(--space-4) var(--gutter) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+    max-width: 400px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toast {
+    box-sizing: border-box;
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: 0 0 0 var(--space-4);
+    background: var(--bg-raised);
+    color: var(--text);
+    border: var(--hairline) solid var(--border-strong);
+    border-radius: var(--radius);
+    animation: fade-in var(--fade-duration) var(--fade-easing);
+  }
+  .toast[data-closed] {
+    animation: fade-out var(--fade-duration) var(--fade-easing);
+  }
+  .toast[data-swipe="move"] {
+    transform: translateX(var(--kb-toast-swipe-move-x, 0));
+  }
+  .toast[data-swipe="cancel"] {
+    transform: translateX(0);
+  }
+
+  .body {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-2) 0;
+  }
+
+  .title {
+    margin: 0;
+    font: 500 15px / 24px var(--font-sans);
+  }
+
+  .description {
+    margin: 0;
+    color: var(--text-muted);
+    font: var(--text-caption);
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+  }
+  .actions > button[data-variant="ghost"] {
+    border-radius: 0;
+  }
+
+  .toast[data-variant="error"] {
+    border-color: var(--error);
+  }
+  .toast[data-variant="error"] .title {
+    color: var(--error);
+  }
+  .toast[data-variant="warning"] {
+    border-color: var(--warning);
+  }
+  .toast[data-variant="warning"] .title {
+    color: var(--warning);
+  }
+
+  @media (min-width: 600px) {
+    .region {
+      justify-content: flex-end;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+}

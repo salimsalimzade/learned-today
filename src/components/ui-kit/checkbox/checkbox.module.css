@@ -1,0 +1,76 @@
+@layer ui {
+  .checkbox {
+    box-sizing: border-box;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-height: var(--target-min);
+    padding-block: var(--space-2);
+    color: var(--text);
+    font: var(--text-body-sm);
+    cursor: pointer;
+  }
+
+  .control {
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    border: var(--hairline) solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-raised);
+    color: var(--on-accent);
+    transition:
+      background-color var(--fade-duration) var(--fade-easing),
+      border-color var(--fade-duration) var(--fade-easing);
+  }
+  .control > [data-icon] {
+    width: 14px;
+    height: 14px;
+  }
+
+  .checkbox:hover .control {
+    border-color: var(--text-muted);
+  }
+  .checkbox:is([data-checked], [data-indeterminate]) .control {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .checkbox:has(input:focus-visible) .control {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+  }
+  .checkbox[data-invalid] .control {
+    border-color: var(--error);
+  }
+  .checkbox[data-disabled] {
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+  .checkbox[data-disabled] .control {
+    background: var(--bg-subtle);
+    border-color: var(--border);
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .description {
+    color: var(--text-muted);
+    font: var(--text-caption);
+  }
+
+  .error {
+    flex-basis: 100%;
+    margin: 0;
+    padding-inline-start: 32px;
+    color: var(--error);
+    font: var(--text-caption);
+  }
+}

@@ -1,0 +1,21 @@
+/** Every /preview page, in the order the index lists them. Base components only. */
+export const PREVIEWS = [
+  { slug: "tokens", name: "Tokens", note: "Colours, type, spacing, radii, fonts" },
+  { slug: "button", name: "Button", note: "Primary, secondary, ghost, icon, link" },
+  { slug: "link", name: "Link", note: "Default, quiet, muted" },
+  { slug: "icon", name: "Icon", note: "Every inline SVG icon" },
+  { slug: "kbd", name: "Kbd", note: "Keys, combos, hover-only hints" },
+  { slug: "avatar", name: "Avatar", note: "Image or initials, three sizes" },
+  { slug: "text-field", name: "Text field", note: "Label, help, error, counter" },
+  { slug: "text-area", name: "Text area", note: "Multi-line field" },
+  { slug: "select", name: "Select", note: "Single choice from a list" },
+  { slug: "checkbox", name: "Checkbox", note: "With help and error text" },
+  { slug: "tabs", name: "Tabs", note: "With counts" },
+  { slug: "toggle-group", name: "Toggle group", note: "Segmented single choice" },
+  { slug: "tag", name: "Tag", note: "Link, toggle, static chip" },
+  { slug: "collapsible", name: "Collapsible", note: "Show and hide a section" },
+  { slug: "tooltip", name: "Tooltip", note: "Hover or focus hint" },
+  { slug: "popover", name: "Popover", note: "Anchored panel" },
+  { slug: "dialog", name: "Dialog", note: "Modal with actions" },
+  { slug: "toast", name: "Toast", note: "Short notices, with undo" },
+] as const;

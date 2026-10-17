@@ -1,0 +1,37 @@
+@layer ui {
+  .link {
+    color: var(--link);
+    border-radius: var(--radius-sm);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--hairline);
+    text-underline-offset: 3px;
+  }
+  .link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .link[data-variant="quiet"] {
+    color: var(--text);
+    text-decoration-line: none;
+  }
+  .link[data-variant="muted"] {
+    color: var(--text-muted);
+    text-decoration-line: none;
+  }
+  .link:is([data-variant="quiet"], [data-variant="muted"]):hover {
+    color: var(--text);
+    text-decoration-line: underline;
+    text-decoration-thickness: var(--hairline);
+  }
+
+  .link:is([data-disabled], [aria-disabled="true"]) {
+    color: var(--text-muted);
+    text-decoration-line: none;
+    cursor: not-allowed;
+  }
+
+  .link > [data-icon] {
+    margin-inline-start: 2px;
+    vertical-align: -2px;
+  }
+}

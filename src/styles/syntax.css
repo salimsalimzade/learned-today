@@ -1,0 +1,109 @@
+/* Syntax colours for code. Global on purpose: the classes arrive inside highlighted HTML
+   (tok-* from lib/markdown on post pages, hljs-* from lowlight in the editor), not from JSX.
+   Every colour passes 4.5:1 on bg-subtle in its theme. Used only inside code. */
+
+:root,
+[data-theme="light"] {
+  --syn-keyword: #7a3e9d;
+  --syn-string: #2f6b3a;
+  --syn-number: #9a4a00;
+  --syn-function: #0f6b73;
+  --syn-type: #8a5a00;
+  --syn-property: #1a1a1a;
+  --syn-punct: #555555;
+  --syn-comment: #6b6b6b;
+}
+[data-theme="dark"] {
+  --syn-keyword: #c9a2ff;
+  --syn-string: #8bd49a;
+  --syn-number: #f2b36b;
+  --syn-function: #6fcfd6;
+  --syn-type: #e8c27a;
+  --syn-property: #ededed;
+  --syn-punct: #b0b0b0;
+  --syn-comment: #9a9a9a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --syn-keyword: #c9a2ff;
+    --syn-string: #8bd49a;
+    --syn-number: #f2b36b;
+    --syn-function: #6fcfd6;
+    --syn-type: #e8c27a;
+    --syn-property: #ededed;
+    --syn-punct: #b0b0b0;
+    --syn-comment: #9a9a9a;
+  }
+}
+
+/* Post pages (server-highlighted) */
+.tok-keyword {
+  color: var(--syn-keyword);
+  font-weight: 500;
+}
+.tok-string {
+  color: var(--syn-string);
+}
+.tok-number {
+  color: var(--syn-number);
+}
+.tok-function {
+  color: var(--syn-function);
+}
+.tok-type {
+  color: var(--syn-type);
+}
+.tok-property {
+  color: var(--syn-property);
+}
+.tok-punct {
+  color: var(--syn-punct);
+}
+.tok-comment {
+  color: var(--syn-comment);
+  font-style: italic;
+}
+
+/* The editor (highlighted live by lowlight with highlight.js class names) */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-meta .hljs-keyword {
+  color: var(--syn-keyword);
+  font-weight: 500;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-addition,
+.hljs-symbol {
+  color: var(--syn-string);
+}
+.hljs-number,
+.hljs-literal {
+  color: var(--syn-number);
+}
+.hljs-title.function_,
+.hljs-built_in {
+  color: var(--syn-function);
+}
+.hljs-type,
+.hljs-title.class_ {
+  color: var(--syn-type);
+}
+.hljs-property,
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-params {
+  color: var(--syn-property);
+}
+.hljs-operator,
+.hljs-punctuation {
+  color: var(--syn-punct);
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--syn-comment);
+  font-style: italic;
+}

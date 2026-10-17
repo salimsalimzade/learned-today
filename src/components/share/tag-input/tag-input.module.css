@@ -1,0 +1,70 @@
+/* Looks like a text input; holds chips and a bare input. */
+.box {
+  composes: input from "../../ui-kit/text-field/text-field.module.css";
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px var(--space-2);
+  overflow: hidden;
+  cursor: text;
+}
+.box[data-expanded] {
+  flex-wrap: wrap;
+}
+.box:focus-within {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+
+.chip {
+  flex: none;
+}
+
+.remove {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin: 0 0 0 var(--space-1);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.remove:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.remove > [data-icon] {
+  width: 12px;
+  height: 12px;
+}
+
+.more {
+  flex: none;
+  color: var(--text);
+}
+
+.draft {
+  flex: 1;
+  min-width: 72px;
+  height: 28px;
+  margin: 0;
+  padding: 0 var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font: 400 14px / 24px var(--font-mono);
+  font-variant-ligatures: none;
+}
+.draft:focus,
+.draft:focus-visible {
+  outline: none;
+}
+.draft::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}

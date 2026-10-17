@@ -1,0 +1,131 @@
+.popover {
+  width: 360px;
+  max-width: calc(100vw - 2 * var(--gutter));
+  padding: 0;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+.who {
+  flex: 1;
+  min-width: 0;
+}
+.esc {
+  align-self: flex-start;
+}
+
+.name {
+  margin: 0;
+  font: 600 15px / 24px var(--font-sans);
+}
+
+.sub {
+  margin: 0;
+  color: var(--text-muted);
+  font: 400 12px / 20px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.section {
+  padding: var(--space-4);
+}
+.ruled {
+  border-top: var(--hairline) solid var(--border);
+}
+.posts {
+  padding: var(--space-3) var(--space-4) var(--space-1);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.baseline {
+  align-items: baseline;
+}
+
+.caption {
+  margin: 0;
+  color: var(--text-muted);
+  font: var(--text-caption);
+}
+.text {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font: var(--text-caption);
+}
+.empty {
+  margin: 0;
+  color: var(--text-muted);
+  font: var(--text-body-sm);
+}
+
+.list {
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.list > li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+  border-bottom: var(--hairline) solid var(--border);
+}
+.list > li:last-child {
+  border-bottom: 0;
+}
+
+.post {
+  font: var(--text-ui);
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  font: var(--text-caption);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.foot {
+  padding: var(--space-2);
+  border-top: var(--hairline) solid var(--border);
+}
+.sign-out {
+  justify-content: flex-start;
+  padding: 0 var(--space-2);
+}
+
+.cta {
+  margin-top: var(--space-3);
+}
+
+/* The header trigger: "Daxil ol" text on wide screens, a person icon on phones. */
+.narrow {
+  display: none;
+}
+@media (max-width: 639.98px) {
+  .wide {
+    display: none;
+  }
+  .narrow {
+    display: contents;
+  }
+  .guest {
+    width: var(--control-h);
+    padding: 0;
+  }
+}

@@ -1,0 +1,119 @@
+/* The canvas's "card" variant with the "hairline" shadow on hover. */
+.card {
+  border: var(--hairline) solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  transition: box-shadow var(--fade-duration) var(--fade-easing);
+}
+.card:hover,
+.card:focus-within {
+  box-shadow: 2px 2px 0 var(--border-strong);
+}
+
+.title {
+  margin: 0;
+  padding: var(--space-5) var(--space-6) var(--space-4);
+  font: var(--text-title);
+  letter-spacing: var(--tracking-title);
+  text-wrap: pretty;
+}
+.title a {
+  color: var(--text);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.title a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: var(--hairline);
+  text-underline-offset: 4px;
+}
+
+.meta {
+  display: flex;
+  align-items: stretch;
+  border-block: var(--hairline) solid var(--border);
+}
+
+.date {
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-5);
+  border-inline-end: var(--hairline) solid var(--border);
+  color: var(--text-muted);
+  font: var(--text-meta);
+  font-variant-numeric: tabular-nums;
+}
+
+.tags {
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  padding: 10px var(--space-5);
+}
+
+.excerpt {
+  margin: 0;
+  padding: var(--space-4) var(--space-6) 0;
+  color: var(--text-muted);
+  font: var(--text-body-sm);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-6) var(--space-4);
+}
+
+.byline-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  color: var(--text-muted);
+  font: var(--text-caption);
+}
+
+.byline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+}
+.byline:hover > span:last-child {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.read {
+  font: var(--text-meta);
+}
+
+@media (max-width: 639.98px) {
+  .title {
+    padding: var(--space-4) var(--space-4) var(--space-3);
+  }
+  .date {
+    padding: 0 var(--space-3);
+  }
+  .tags {
+    padding: 10px var(--space-3);
+  }
+  .excerpt {
+    padding: var(--space-4) var(--space-4) 0;
+  }
+  .foot {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+  }
+}

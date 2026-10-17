@@ -1,0 +1,227 @@
+/* what-did-i-learn-today design tokens. Generated from tokens.json by scripts/build-tokens.mjs. Do not edit. */
+
+@layer base, ui;
+
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-024F, U+0259, U+02B0-036F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2318, U+2325-232B, U+23CE, U+25A0-25FF, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/inter-latin-italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-024F, U+0259, U+02B0-036F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2318, U+2325-232B, U+23CE, U+25A0-25FF, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/jetbrains-mono-latin.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-024F, U+0259, U+02B0-036F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2318, U+2325-232B, U+23CE, U+25A0-25FF, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/jetbrains-mono-latin-italic.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: italic;
+  font-display: swap;
+  unicode-range: U+0000-024F, U+0259, U+02B0-036F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2318, U+2325-232B, U+23CE, U+25A0-25FF, U+FEFF, U+FFFD;
+}
+
+:root, [data-theme="light"] {
+  --bg: #fafaf7; /* Page background, the paper. Also the gap colour behind sticky day headers and the header bar. */
+  --bg-raised: #ffffff; /* Floating layers (popover, select list, dialog, toast, reaction tray) and the inside of text fields. Always paired with a border-strong hairline, never a shadow. */
+  --bg-subtle: #f2f1ec; /* Code blocks, inline code, Kbd faces, avatar fallbacks, disabled primary buttons. */
+  --bg-hover: #efeee9; /* Hover on buttons, toggles and option rows; the keyboard-highlighted row in Select and the command palette. */
+  --text: #1a1a1a; /* Primary text: titles, post prose, labels. Reads on bg, bg-raised, bg-subtle, bg-hover and accent-soft in both themes (13:1 or more). */
+  --text-muted: #6b6b6b; /* Secondary text: excerpts, meta lines, dates, helper text, placeholders, Kbd glyphs. 4.5:1 or more on bg, bg-raised, bg-subtle and bg-hover in both themes. */
+  --border: #e6e4df; /* Hairlines that only separate: between feed items, code-block edges, tab lists, tag chips at rest. Decorative (about 1.2:1), so never the only edge of a control. */
+  --border-strong: #8a8884; /* Edges that identify a control or a floating layer: inputs, secondary buttons, checkboxes, toggle groups, popovers, dialogs, toasts, day-header rules. 3:1 or more on every ground. */
+  --accent: #2547a8; /* The one colour. Only for links, focus rings, the primary button fill and selected states. As text it reads on bg, bg-raised, bg-hover and accent-soft (6.4:1 or more). */
+  --accent-hover: #1d3a8c; /* Primary button on hover. Nowhere else. */
+  --accent-soft: #e8edf9; /* Selected backgrounds: pressed toggle, your own reaction, the active tag filter, text selection. Always with accent text or an accent edge. */
+  --on-accent: #ffffff; /* Label and icons on an accent fill (primary button, checked checkbox). Dark in the dark theme because the accent lightens there. */
+  --link: var(--accent); /* Inline links. An alias of accent; always underlined in prose because accent alone is only about 2:1 against text. */
+  --focus: var(--accent); /* Keyboard focus ring: a solid 2px outline, 2px off the element. 6.4:1 or more on every ground in both themes. */
+  --warning: #b54708; /* Warnings as text and as a field or toast edge, always with a word that says what is wrong. 4.8:1 or more on bg, bg-raised and bg-subtle. */
+  --error: #b42318; /* Errors as text and as an invalid field's edge, always with a message. 5.8:1 or more on bg, bg-raised and bg-subtle. */
+  --tooltip-bg: var(--text); /* Tooltip fill: the theme inverted. */
+  --tooltip-text: var(--bg); /* Tooltip label, on tooltip-bg. */
+  --scrim: rgba(26, 26, 26, 0.32); /* Behind dialogs and the command palette. */
+}
+[data-theme="dark"] {
+  --bg: #111111;
+  --bg-raised: #1c1c1c;
+  --bg-subtle: #1a1a1a;
+  --bg-hover: #222222;
+  --text: #ededed;
+  --text-muted: #9a9a9a;
+  --border: #2a2a2a;
+  --border-strong: #6e6e6e;
+  --accent: #8aa4ff;
+  --accent-hover: #a9bdff;
+  --accent-soft: #1c2440;
+  --on-accent: #111111;
+  --link: var(--accent);
+  --focus: var(--accent);
+  --warning: #fdb022;
+  --error: #f97066;
+  --tooltip-bg: var(--text);
+  --tooltip-text: var(--bg);
+  --scrim: rgba(0, 0, 0, 0.64);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111111;
+    --bg-raised: #1c1c1c;
+    --bg-subtle: #1a1a1a;
+    --bg-hover: #222222;
+    --text: #ededed;
+    --text-muted: #9a9a9a;
+    --border: #2a2a2a;
+    --border-strong: #6e6e6e;
+    --accent: #8aa4ff;
+    --accent-hover: #a9bdff;
+    --accent-soft: #1c2440;
+    --on-accent: #111111;
+    --link: var(--accent);
+    --focus: var(--accent);
+    --warning: #fdb022;
+    --error: #f97066;
+    --tooltip-bg: var(--text);
+    --tooltip-text: var(--bg);
+    --scrim: rgba(0, 0, 0, 0.64);
+  }
+}
+
+:root {
+  /* spacing: 4px grid. Every gap, padding and offset is one of these. */
+  --space-1: 4px; /* Icon to label; label to field. */
+  --space-2: 8px; /* Gaps between chips and pills; padding inside compact rows. */
+  --space-3: 12px; /* Field padding; between a title and its meta line; row gap of chip lists so 40px hit areas never overlap. */
+  --space-4: 16px; /* Side gutter on phones; button padding; popover padding. */
+  --space-5: 20px; /* Between paragraphs in a post; above and below a feed item. */
+  --space-6: 24px; /* Dialog padding; around code blocks; between form fields. */
+  --space-8: 32px; /* Before a subheading inside a post. */
+  --space-10: 40px; /* Between day groups in the feed; step-list number column. */
+  --space-12: 48px; /* Between a post and its reactions block; page top padding. */
+  --space-16: 64px; /* Before the footer; between major page regions on wide screens. */
+  /* radius: One radius for almost everything; round only for people and reactions. */
+  --radius-sm: 4px; /* Kbd, inline code, checkbox boxes, option rows inside lists, tooltips. */
+  --radius: 6px; /* Buttons, fields, tag chips, code blocks, popovers, dialogs, toasts. */
+  --radius-full: 9999px; /* Avatars, reaction pills and the reaction tray. */
+  /* size: Layout measures and hit areas. */
+  --column-max: 680px; /* Maximum width of the reading column, for every page. */
+  --gutter: 16px; /* Side padding of the column on phones and up. */
+  --header-h: 56px; /* Height of the sticky site header. */
+  --control-h: 40px; /* Height of buttons, fields, select triggers, toggles and option rows. */
+  --target-min: 40px; /* Smallest hit area for anything tappable; smaller visuals extend their hit area to this. */
+  --chip-h: 28px; /* Visible height of a tag chip (hit area still 40px). */
+  --pill-h: 32px; /* Visible height of a reaction pill (hit area still 40px). */
+  --avatar-sm: 20px; /* Avatar inside feed meta lines. */
+  --avatar-md: 32px; /* Avatar in post bylines and the header's signed-in button. */
+  --avatar-lg: 56px; /* Avatar at the top of an author page. */
+  /* stroke: 1px hairlines everywhere; focus is the only thicker line. */
+  --hairline: 1px; /* Every border and rule. */
+  --focus-width: 2px; /* Width of the focus outline. */
+  --focus-offset: 2px; /* Gap between an element and its focus outline (inset by -2px where a scroll container would clip it). */
+  /* transition: Short fades only: no slides, scales or spins. Under prefers-reduced-motion they drop to 1ms. */
+  --fade-duration: 120ms; /* Every opacity fade and colour change: overlays opening and closing, hover backgrounds. */
+  --fade-easing: ease-out; /* Easing for every fade. */
+  /* layer: Stacking order. */
+  --layer-sticky: 10; /* Sticky site header and day headers. */
+  --layer-popover: 40; /* Popovers, select lists, tooltips, the reaction tray. */
+  --layer-dialog: 50; /* Dialogs, the command palette and their scrim. */
+  --layer-toast: 60; /* Toast region, above everything. */
+  /* type */
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --text-display: 650 32px/40px var(--font-sans); /* The post title on a post page, and topic, tag or author page titles. One per page. */
+  --tracking-display: -0.02em;
+  --text-title: 600 20px/28px var(--font-sans); /* Feed item titles and dialog titles. */
+  --tracking-title: -0.01em;
+  --text-heading: 600 18px/28px var(--font-sans); /* Subheadings inside a post; section headings on a page. */
+  --tracking-heading: 0;
+  --text-body: 400 17px/28px var(--font-sans); /* Post prose. The reading voice of the site. */
+  --tracking-body: 0;
+  --text-body-sm: 400 15px/24px var(--font-sans); /* Feed excerpts, dialog and popover text, empty states, toast titles. */
+  --tracking-body-sm: 0;
+  --text-ui: 500 15px/24px var(--font-sans); /* Buttons, tabs, toggles, field labels, menu items. */
+  --tracking-ui: 0;
+  --text-input: 400 16px/24px var(--font-sans); /* Text typed into fields. 16px so phones do not zoom on focus. */
+  --tracking-input: 0;
+  --text-caption: 400 13px/20px var(--font-sans); /* Helper and error text under fields, author names in meta lines, tooltips. */
+  --tracking-caption: 0;
+  --text-code: 400 14px/24px var(--font-mono); /* Code blocks. Inline code uses the same face at 0.875em of the text around it. */
+  --tracking-code: 0;
+  --text-meta: 400 13px/20px var(--font-mono); /* Dates, reading time, reaction counts, tag chips, language labels. */
+  --tracking-meta: 0;
+  --text-kbd: 500 12px/16px var(--font-mono); /* Keyboard hints inside Kbd. */
+  --tracking-kbd: 0;
+  --text-wordmark: 600 15px/24px var(--font-mono); /* The site name in the header. Always lowercase, always hyphenated. */
+  --tracking-wordmark: 0;
+}
+
+.type-display {
+  font: var(--text-display);
+  letter-spacing: var(--tracking-display);
+}
+.type-title {
+  font: var(--text-title);
+  letter-spacing: var(--tracking-title);
+}
+.type-heading {
+  font: var(--text-heading);
+  letter-spacing: var(--tracking-heading);
+}
+.type-body {
+  font: var(--text-body);
+  letter-spacing: var(--tracking-body);
+}
+.type-body-sm {
+  font: var(--text-body-sm);
+  letter-spacing: var(--tracking-body-sm);
+}
+.type-ui {
+  font: var(--text-ui);
+  letter-spacing: var(--tracking-ui);
+}
+.type-input {
+  font: var(--text-input);
+  letter-spacing: var(--tracking-input);
+}
+.type-caption {
+  font: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+}
+.type-code {
+  font: var(--text-code);
+  letter-spacing: var(--tracking-code);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+}
+.type-meta {
+  font: var(--text-meta);
+  letter-spacing: var(--tracking-meta);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+}
+.type-kbd {
+  font: var(--text-kbd);
+  letter-spacing: var(--tracking-kbd);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+}
+.type-wordmark {
+  font: var(--text-wordmark);
+  letter-spacing: var(--tracking-wordmark);
+  font-variant-ligatures: none;
+  font-variant-numeric: tabular-nums;
+}

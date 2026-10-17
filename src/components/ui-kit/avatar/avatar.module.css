@@ -1,0 +1,36 @@
+@layer ui {
+  .avatar {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--avatar-md);
+    height: var(--avatar-md);
+    overflow: hidden;
+    border: var(--hairline) solid var(--border);
+    border-radius: var(--radius-full);
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+    font: 500 12px / 1 var(--font-sans);
+    vertical-align: middle;
+    user-select: none;
+  }
+
+  .avatar[data-size="sm"] {
+    width: var(--avatar-sm);
+    height: var(--avatar-sm);
+    font-size: 10px;
+  }
+  .avatar[data-size="lg"] {
+    width: var(--avatar-lg);
+    height: var(--avatar-lg);
+    font-size: 18px;
+  }
+
+  .image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

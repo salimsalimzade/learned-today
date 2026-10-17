@@ -1,0 +1,116 @@
+@layer ui {
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: var(--layer-dialog);
+    background: var(--scrim);
+    animation: fade-in var(--fade-duration) var(--fade-easing);
+  }
+  .scrim[data-closed] {
+    animation: fade-out var(--fade-duration) var(--fade-easing);
+  }
+
+  /* Bottom sheet on phones, centred from 600px. */
+  .positioner {
+    position: fixed;
+    inset: 0;
+    z-index: var(--layer-dialog);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .dialog {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 480px;
+    max-height: calc(100dvh - var(--space-8));
+    overflow: auto;
+    padding: var(--space-6) var(--gutter) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+    background: var(--bg-raised);
+    color: var(--text);
+    border: var(--hairline) solid var(--border-strong);
+    border-bottom: 0;
+    border-radius: var(--radius) var(--radius) 0 0;
+    animation: fade-in var(--fade-duration) var(--fade-easing);
+  }
+  .dialog[data-closed] {
+    animation: fade-out var(--fade-duration) var(--fade-easing);
+  }
+  .dialog:focus-visible {
+    outline: none;
+  }
+
+  .head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .title {
+    margin: 0;
+    font: var(--text-title);
+    letter-spacing: var(--tracking-title);
+  }
+
+  .close {
+    margin: -8px -8px 0 0;
+  }
+
+  .description {
+    margin: var(--space-2) 0 0;
+    color: var(--text-muted);
+    font: var(--text-body-sm);
+  }
+
+  .body {
+    margin-top: var(--space-6);
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+    margin-top: var(--space-6);
+  }
+  .actions > * {
+    width: 100%;
+  }
+
+  .note {
+    margin: var(--space-4) 0 0;
+    color: var(--text-muted);
+    font: var(--text-caption);
+  }
+
+  @media (min-width: 600px) {
+    .positioner {
+      align-items: center;
+      padding: var(--space-6);
+    }
+    .dialog {
+      padding: var(--space-6);
+      border-bottom: var(--hairline) solid var(--border-strong);
+      border-radius: var(--radius);
+    }
+    .actions {
+      flex-direction: row;
+      justify-content: flex-end;
+    }
+    .actions > * {
+      width: auto;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+}
