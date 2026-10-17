@@ -1,0 +1,6 @@
+{
+  // Supabase Edge Functions run on Deno (jsr: imports, Deno globals). Let the Deno
+  // extension type-check only that folder; the rest of the repo stays on Node TypeScript.
+  "deno.enablePaths": ["supabase/functions"],
+  "deno.lint": false
+}
