@@ -1,0 +1,87 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      // Static assets are served as-is.
+      "!public",
+      // Generated: `pnpm tokens` and `pnpm db:types`.
+      "!src/styles/tokens.css",
+      "!src/lib/supabase/database.types.ts",
+      "!docs/design-system/bundle.css",
+      "!supabase/.temp"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 140
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "style": {
+        // `x!` is used where Show/guards already narrow but TypeScript cannot follow.
+        "noNonNullAssertion": "off",
+        // CSS modules order rules by component state, not by specificity.
+        "noDescendingSpecificity": "off"
+      },
+      "complexity": {
+        // Key handlers use `(e.preventDefault(), move(1))` as one-liners.
+        "noCommaOperator": "off",
+        // Only in the reduced-motion reset and the phone header swap.
+        "noImportantStyles": "off"
+      },
+      "suspicious": {
+        // Theme and language prefs live in a cookie so SSR can read them.
+        "noDocumentCookie": "off"
+      }
+    }
+  },
+  "overrides": [
+    // These listboxes use aria-activedescendant: focus stays in the input and arrow keys move
+    // the highlight, so options are not focusable and take clicks without key handlers by design.
+    {
+      "includes": [
+        "src/components/overlays/command-palette/**",
+        "src/components/share/editor/**",
+        "src/components/share/language-picker/**"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noNoninteractiveElementToInteractiveRole": "off",
+            "useFocusableInteractive": "off",
+            "useKeyWithClickEvents": "off"
+          }
+        }
+      }
+    }
+  ],
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": true
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

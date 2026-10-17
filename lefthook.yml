@@ -1,0 +1,11 @@
+# Git hooks, installed by `pnpm install` (lefthook's postinstall). Docs: https://lefthook.dev/configuration/
+# Skip once with `git push --no-verify` or `LEFTHOOK=0 git push`.
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: biome
+      run: pnpm check
+
+    - name: typecheck
+      run: pnpm typecheck
