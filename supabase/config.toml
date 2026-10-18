@@ -30,15 +30,14 @@ enable_signup = true
 # Turn these on once the OAuth apps exist. Callback URL for both:
 # http://127.0.0.1:54321/auth/v1/callback (local) or https://<ref>.supabase.co/auth/v1/callback
 [auth.external.github]
-enabled = false
+enabled = true
 client_id = "env(SUPABASE_AUTH_GITHUB_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_GITHUB_SECRET)"
 
 [auth.external.google]
-enabled = false
+enabled = true
 client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
-skip_nonce_check = true
 
 [edge_runtime]
 enabled = true

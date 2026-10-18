@@ -9,7 +9,6 @@ alter table public.post_tags          enable row level security;
 alter table public.reactions          enable row level security;
 alter table public.telegram_chats     enable row level security;
 alter table public.follows            enable row level security;
-alter table public.notification_queue enable row level security;
 
 -- profiles
 create policy "profiles are public" on public.profiles

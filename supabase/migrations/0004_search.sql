@@ -1,6 +1,6 @@
 -- 0004_search.sql: command palette search over titles, bodies and tags.
--- 'simple' config: there's no Azerbaijani stemmer, so words match as written (lowercased).
--- Trigram indexes catch partial words ("tip" → "tipini").
+-- 'simple' config: no stemming, so words match as written (lowercased).
+-- Trigram indexes catch partial words ("typ" finds "types").
 
 alter table public.posts
   add column search tsvector generated always as (

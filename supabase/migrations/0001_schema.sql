@@ -6,7 +6,6 @@ create extension if not exists pg_trgm with schema extensions;
 create type public.reaction_kind as enum ('learned', 'like', 'love', 'funny', 'surprised', 'thanks');
 create type public.post_status as enum ('draft', 'published', 'hidden');
 create type public.follow_target as enum ('all', 'topic', 'tag', 'author');
-create type public.queue_status as enum ('pending', 'sent', 'failed');
 
 -- One row per signed-in person, created by a trigger on auth.users (0003).
 create table public.profiles (
@@ -18,14 +17,11 @@ create table public.profiles (
   created_at   timestamptz not null default now()
 );
 
--- Curated list; only the service role adds topics.
+-- One flat, curated list in English. Slugs are English only. Only the service role adds topics.
 create table public.topics (
-  slug           text primary key check (slug ~ '^[a-z0-9-]+$'),
-  name_az        text not null,
-  name_en        text not null,
-  description_az text not null default '',
-  description_en text not null default '',
-  created_at     timestamptz not null default now()
+  slug       text primary key check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' and char_length(slug) <= 40),
+  name       text not null check (char_length(btrim(name)) between 1 and 40),
+  created_at timestamptz not null default now()
 );
 
 create table public.posts (
@@ -34,7 +30,6 @@ create table public.posts (
   topic_slug        text not null references public.topics (slug),
   title             text not null check (char_length(btrim(title)) between 1 and 90),
   body_md           text not null check (char_length(body_md) between 1 and 8000),
-  lang              text not null default 'az' check (lang in ('az', 'en')),
   status            public.post_status not null default 'published',
   written_by_author boolean not null check (written_by_author),
   read_minutes      int not null default 1,
@@ -68,8 +63,6 @@ create table public.reactions (
 -- Telegram side. Written only by the webhook (service role).
 create table public.telegram_chats (
   chat_id    bigint primary key,
-  user_id    uuid references public.profiles (id) on delete set null,
-  language   text not null default 'az' check (language in ('az', 'en')),
   created_at timestamptz not null default now(),
   blocked_at timestamptz
 );
@@ -84,33 +77,19 @@ create table public.follows (
 
 create index follows_target_idx on public.follows (target, value);
 
-create table public.notification_queue (
-  id         bigint generated always as identity primary key,
-  post_id    bigint not null references public.posts (id) on delete cascade,
-  chat_id    bigint not null references public.telegram_chats (chat_id) on delete cascade,
-  status     public.queue_status not null default 'pending',
-  attempts   int not null default 0,
-  last_error text,
-  created_at timestamptz not null default now(),
-  sent_at    timestamptz,
-  unique (post_id, chat_id)
-);
-
-create index notification_queue_pending_idx on public.notification_queue (created_at) where status = 'pending';
-
 -- What every page reads. security_invoker keeps the posts RLS policies in force.
 create view public.public_posts with (security_invoker = true) as
 select
   p.id,
   p.title,
   p.body_md,
-  left(regexp_replace(split_part(p.body_md, E'\n\n', 1), '[`*_>#\[\]]|\([^)]*\)', '', 'g'), 220) as excerpt,
-  p.lang,
+  left(regexp_replace(split_part(p.body_md, E'
+
+', 1), '[`*_>#\[\]]|\([^)]*\)', '', 'g'), 220) as excerpt,
   p.read_minutes,
   p.published_at,
   t.slug as topic_slug,
-  t.name_az as topic_name_az,
-  t.name_en as topic_name_en,
+  t.name as topic_name,
   a.id as author_id,
   a.handle as author_handle,
   a.display_name as author_name,
