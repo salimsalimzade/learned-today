@@ -1,7 +1,7 @@
 import type { ChainedCommands, Editor } from "@tiptap/core";
 import type { IconName } from "~/components/ui-kit";
 
-export type BlockId = "text" | "heading" | "list" | "steps" | "quote" | "code";
+export type BlockId = "text" | "heading" | "list" | "ordered" | "quote" | "code";
 
 export interface BlockDef {
   id: BlockId;
@@ -34,17 +34,17 @@ export const BLOCKS: BlockDef[] = [
   {
     id: "list",
     icon: "list",
-    label: "List",
-    description: "Bulleted list",
+    label: "Bulleted list",
+    description: "Points in any order",
     aliases: ["ul", "bullet", "list"],
     apply: (c) => c.toggleBulletList(),
   },
   {
-    id: "steps",
+    id: "ordered",
     icon: "list-ordered",
-    label: "Steps",
-    description: "Numbered steps",
-    aliases: ["ol", "numbered", "steps"],
+    label: "Numbered list",
+    description: "1, 2, 3 in order",
+    aliases: ["ol", "numbered", "ordered", "steps"],
     apply: (c) => c.toggleOrderedList(),
   },
   {
@@ -70,7 +70,7 @@ export function currentBlock(editor: Editor | undefined): BlockDef {
   if (!editor) return find("text");
   if (editor.isActive("codeBlock")) return find("code");
   if (editor.isActive("heading")) return find("heading");
-  if (editor.isActive("orderedList")) return find("steps");
+  if (editor.isActive("orderedList")) return find("ordered");
   if (editor.isActive("bulletList")) return find("list");
   if (editor.isActive("blockquote")) return find("quote");
   return find("text");

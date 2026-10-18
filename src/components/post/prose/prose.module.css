@@ -15,6 +15,23 @@
   margin-block: var(--space-6);
 }
 
+/* Feed cards: the same rules a step smaller (lib/markdown estimates heights from these). */
+.prose[data-compact] {
+  font: var(--text-body-sm);
+}
+.prose[data-compact] > * + *,
+.prose[data-compact] > figure,
+.prose[data-compact] > * + figure {
+  margin-block: var(--space-4) 0;
+}
+.prose[data-compact] > :first-child {
+  margin-top: 0;
+}
+.prose[data-compact] :is(h2, h3) {
+  font: var(--text-ui);
+  font-weight: 600;
+}
+
 .prose h2 {
   margin-top: var(--space-8);
   font: var(--text-heading);
@@ -51,41 +68,22 @@
   box-decoration-break: clone;
 }
 
-.prose ul {
+/* Bulleted and numbered lists share one look: same indent and spacing, either nested in the other. */
+.prose :is(ul, ol) {
   padding-inline-start: var(--space-6);
+}
+.prose ul {
   list-style-type: "–  ";
 }
-.prose li + li {
-  margin-top: var(--space-2);
-}
-
-/* Ordered lists are "steps": 01, 02… in the margin, ruled between. */
 .prose ol {
-  list-style: none;
-  padding: 0;
-  counter-reset: step;
+  list-style-type: decimal;
 }
-.prose ol > li {
-  position: relative;
-  counter-increment: step;
-  padding-inline-start: var(--space-10);
-}
-.prose ol > li::before {
-  content: counter(step, decimal-leading-zero);
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--text-muted);
-  font: 400 13px / 28px var(--font-mono);
+.prose ol > li::marker {
   font-variant-numeric: tabular-nums;
 }
-.prose ol > li + li {
-  margin-top: var(--space-3);
-  padding-top: var(--space-3);
-  border-top: var(--hairline) solid var(--border);
-}
-.prose ol > li + li::before {
-  top: var(--space-3);
+.prose li + li,
+.prose li > :is(ul, ol) {
+  margin-top: var(--space-2);
 }
 
 .prose blockquote {

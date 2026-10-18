@@ -119,7 +119,7 @@
   --space-5: 20px; /* Between paragraphs in a post; above and below a feed item. */
   --space-6: 24px; /* Dialog padding; around code blocks; between form fields. */
   --space-8: 32px; /* Before a subheading inside a post. */
-  --space-10: 40px; /* Between day groups in the feed; step-list number column. */
+  --space-10: 40px; /* Between day groups in the feed. */
   --space-12: 48px; /* Between a post and its reactions block; page top padding. */
   --space-16: 64px; /* Before the footer; between major page regions on wide screens. */
   /* radius: One radius for almost everything; round only for people and reactions. */

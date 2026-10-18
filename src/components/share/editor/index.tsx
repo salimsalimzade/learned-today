@@ -7,6 +7,7 @@ import { Portal } from "solid-js/web";
 import { createEditorTransaction } from "solid-tiptap";
 import { buttonClass, fieldStyles, Icon, type IconName, inputClass, popoverClass } from "~/components/ui-kit";
 import { cx, flag } from "~/lib/cx";
+import { normalizeHref } from "~/lib/links";
 import { proseClass } from "../../post/prose";
 import { BLOCKS, currentBlock } from "./blocks";
 import styles from "./editor.module.css";
@@ -56,6 +57,7 @@ export function Editor(props: EditorProps) {
   });
   const [linkOpen, setLinkOpen] = createSignal(false);
   const [linkUrl, setLinkUrl] = createSignal("");
+  const [linkError, setLinkError] = createSignal(false);
   let mount: HTMLDivElement | undefined;
   let toolbar: HTMLDivElement | undefined;
   let slashList: HTMLUListElement | undefined;
@@ -113,7 +115,7 @@ export function Editor(props: EditorProps) {
     code: !!e?.isActive("code"),
     link: !!e?.isActive("link"),
     list: !!e?.isActive("bulletList"),
-    steps: !!e?.isActive("orderedList"),
+    ordered: !!e?.isActive("orderedList"),
     quote: !!e?.isActive("blockquote"),
     codeBlock: !!e?.isActive("codeBlock"),
   }));
@@ -150,11 +152,16 @@ export function Editor(props: EditorProps) {
     </button>
   );
 
+  /** Empty removes the link. Anything the post page wouldn't render as a link keeps the box open with an error. */
   const applyLink = (e: SubmitEvent) => {
     e.preventDefault();
-    const href = linkUrl().trim();
-    if (href) chain().extendMarkRange("link").setLink({ href }).run();
-    else chain().extendMarkRange("link").unsetLink().run();
+    if (!linkUrl().trim()) {
+      chain().extendMarkRange("link").unsetLink().run();
+      return setLinkOpen(false);
+    }
+    const href = normalizeHref(linkUrl());
+    if (!href) return setLinkError(true);
+    chain().extendMarkRange("link").setLink({ href }).run();
     setLinkOpen(false);
   };
 
@@ -197,6 +204,7 @@ export function Editor(props: EditorProps) {
           open={linkOpen()}
           onOpenChange={(open) => {
             if (open) setLinkUrl(editor()?.getAttributes("link").href ?? "");
+            setLinkError(false);
             setLinkOpen(open);
           }}
           placement="bottom-start"
@@ -217,19 +225,26 @@ export function Editor(props: EditorProps) {
               onOpenAutoFocus={(e) => (e.preventDefault(), document.getElementById(linkFieldId)?.focus({ preventScroll: true }))}
               onCloseAutoFocus={(e) => (e.preventDefault(), editor()?.commands.focus())}
             >
-              <form class={fieldStyles.field} onSubmit={applyLink}>
+              <form class={fieldStyles.field} data-invalid={flag(linkError())} onSubmit={applyLink} novalidate>
                 <label class={fieldStyles.label} for={linkFieldId}>
                   Link URL
                 </label>
                 <input
                   id={linkFieldId}
                   class={inputClass}
-                  type="url"
+                  type="text"
                   inputmode="url"
-                  placeholder="https://"
+                  autocomplete="off"
+                  spellcheck={false}
+                  placeholder="example.com or /post/12"
+                  aria-invalid={linkError()}
+                  aria-describedby={`${linkFieldId}-hint`}
                   value={linkUrl()}
-                  onInput={(e) => setLinkUrl(e.currentTarget.value)}
+                  onInput={(e) => (setLinkUrl(e.currentTarget.value), setLinkError(false))}
                 />
+                <p class={linkError() ? fieldStyles.error : fieldStyles.description} id={`${linkFieldId}-hint`}>
+                  {linkError() ? "Use a web address, an email, or a path on this site." : "A web address, an email, or /post/12."}
+                </p>
                 <div class={styles["link-actions"]}>
                   <Show when={state().link}>
                     <button
@@ -250,8 +265,8 @@ export function Editor(props: EditorProps) {
           </KPopover.Portal>
         </KPopover>
         <span class={styles.sep} aria-hidden="true" />
-        <ToolButton icon="list" label="List" pressed={state().list} run={() => chain().toggleBulletList().run()} />
-        <ToolButton icon="list-ordered" label="Steps" pressed={state().steps} run={() => chain().toggleOrderedList().run()} />
+        <ToolButton icon="list" label="Bulleted list" pressed={state().list} run={() => chain().toggleBulletList().run()} />
+        <ToolButton icon="list-ordered" label="Numbered list" pressed={state().ordered} run={() => chain().toggleOrderedList().run()} />
         <ToolButton icon="quote" label="Quote" pressed={state().quote} run={() => chain().toggleBlockquote().run()} />
         <ToolButton
           icon="code-block"

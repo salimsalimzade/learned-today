@@ -31,6 +31,27 @@ const FenceEnter = Extension.create({
   },
 });
 
+/**
+ * Ctrl/Cmd+A inside a code block selects that block's code, not the whole note. Pressed again once all the code
+ * is selected (or anywhere outside a code block) it falls through to ProseMirror's select-all.
+ */
+const CodeSelectAll = Extension.create({
+  name: "codeSelectAll",
+  priority: 1000,
+  addKeyboardShortcuts() {
+    return {
+      "Mod-a": ({ editor }) => {
+        const { $from, $to } = editor.state.selection;
+        if ($from.parent.type.name !== "codeBlock" || !$from.sameParent($to)) return false;
+        const from = $from.start();
+        const to = $from.end();
+        if ($from.pos === from && $to.pos === to) return false;
+        return editor.commands.setTextSelection({ from, to });
+      },
+    };
+  },
+});
+
 /** Ctrl/Cmd+Enter publishes instead of inserting a line break. */
 const SubmitShortcut = (onSubmit: () => void) =>
   Extension.create({
@@ -66,6 +87,7 @@ export function editorExtensions(opts: { owner: Owner | null; slash: SlashRender
     Placeholder.configure({ placeholder: () => PLACEHOLDER }),
     Markdown,
     FenceEnter,
+    CodeSelectAll,
     SubmitShortcut(opts.onSubmit),
     SlashCommands({ render: opts.slash }),
   ];
