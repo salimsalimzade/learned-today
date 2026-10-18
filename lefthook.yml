@@ -1,6 +1,15 @@
 # Git hooks, installed by `pnpm install` (lefthook's postinstall). Docs: https://lefthook.dev/configuration/
 # Skip once with `git push --no-verify` or `LEFTHOOK=0 git push`.
 
+pre-commit:
+  jobs:
+    # Formats the staged files with Biome (plus its safe fixes and import sorting) and stages the result, so
+    # a commit never carries formatting that `pnpm check` and CI reject. Anything it can't fix stops the commit.
+    - name: biome
+      glob: "*.{js,mjs,cjs,ts,tsx,json,jsonc,css}"
+      run: pnpm exec biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+      stage_fixed: true
+
 commit-msg:
   jobs:
     # type(scope): lowercase message (commitlint.config.js). {1} is the file git wrote the message to.
