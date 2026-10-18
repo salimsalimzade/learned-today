@@ -1,4 +1,4 @@
-import { createAsync, useLocation } from "@solidjs/router";
+import { createAsync, useAction, useLocation } from "@solidjs/router";
 import { createSignal, For, Show } from "solid-js";
 import {
   Avatar,
@@ -12,11 +12,16 @@ import {
   PopoverContent,
   PopoverTitle,
   PopoverTrigger,
+  showToast,
+  TagChip,
+  TagList,
 } from "~/components/ui-kit";
+import { newRssLink, setRssFollow } from "~/lib/actions/rss-feed";
 import { cx } from "~/lib/cx";
 import { formatDate } from "~/lib/format";
 import { getMyPosts } from "~/lib/queries/posts";
-import type { Provider, SessionUser } from "~/lib/types";
+import { getMyRssFeed } from "~/lib/queries/rss-feed";
+import type { Provider, RssFollow, SessionUser } from "~/lib/types";
 import { useSignIn, useSignOut } from "../../overlays/use-sign-in";
 import styles from "./account-menu.module.css";
 
@@ -29,9 +34,29 @@ export function AccountMenu(props: { user: SessionUser | null | undefined }) {
   // .latest, not mine(): reading it while it loads would suspend the root <Suspense> and blank the page
   // behind the menu (see command-palette). The section appears once the posts are in.
   const mine = createAsync(async () => (open() && props.user ? getMyPosts() : null));
+  const rss = createAsync(async () => (open() && props.user ? getMyRssFeed() : null));
+  const follow = useAction(setRssFollow);
+  const newLink = useAction(newRssLink);
   const signIn = useSignIn();
   const signOut = useSignOut();
   const close = () => setOpen(false);
+
+  const unfollow = async (f: RssFollow) => {
+    const result = await follow({ type: f.type, slug: f.slug }, false).catch(() => null);
+    if (!result?.ok) showToast({ title: "Couldn't update your RSS feed.", description: "Try again in a moment.", variant: "error" });
+  };
+  const copyFeed = async (path: string) => {
+    await navigator.clipboard.writeText(new URL(path, window.location.origin).href);
+    showToast({ title: "RSS feed link copied.", description: "Paste it into your RSS reader." });
+  };
+  const replaceLink = async () => {
+    const result = await newLink().catch(() => null);
+    showToast(
+      result?.ok
+        ? { title: "Your RSS feed has a new link.", description: "Copy it into your reader; the old one no longer works." }
+        : { title: "Couldn't make a new link.", description: "Try again in a moment.", variant: "error" },
+    );
+  };
 
   const start = async (provider: Provider) => {
     await signIn.start(provider, location.pathname + location.search);
@@ -140,6 +165,63 @@ export function AccountMenu(props: { user: SessionUser | null | undefined }) {
                       </Link>
                     </section>
                   </Show>
+                )}
+              </Show>
+
+              <Show when={rss.latest}>
+                {(feed) => (
+                  <section class={cx(styles.section, styles.ruled)} aria-labelledby="acc-rss">
+                    <div class={cx(styles.row, styles.baseline)}>
+                      <h3 id="acc-rss" class={styles.caption}>
+                        Your RSS feed
+                      </h3>
+                      <span class={styles.sub}>{`${feed().follows.length} followed`}</span>
+                    </div>
+                    <Show
+                      when={feed().follows.length > 0}
+                      fallback={<p class={styles.text}>Add tags and authors from their Follow menu, then read them all at one link.</p>}
+                    >
+                      <TagList class={styles.follows} aria-label="Followed by RSS">
+                        <For each={feed().follows}>
+                          {(f) => (
+                            <li>
+                              <TagChip
+                                kind={f.type === "author" ? "topic" : "tag"}
+                                end={
+                                  <button
+                                    type="button"
+                                    class={styles.remove}
+                                    aria-label={`Remove from your RSS feed: ${f.type === "author" ? f.name : `#${f.name}`}`}
+                                    onClick={() => unfollow(f)}
+                                  >
+                                    <Icon name="x" />
+                                  </button>
+                                }
+                              >
+                                {f.name}
+                              </TagChip>
+                            </li>
+                          )}
+                        </For>
+                      </TagList>
+                      <Show when={feed().path}>
+                        {(path) => (
+                          <>
+                            <div class={styles.actions}>
+                              <Button onClick={() => copyFeed(path())}>
+                                <Icon name="copy" />
+                                Copy link
+                              </Button>
+                              <Button variant="ghost" onClick={replaceLink}>
+                                New link
+                              </Button>
+                            </div>
+                            <p class={styles.text}>Keep the link to yourself. A new link stops the old one from working.</p>
+                          </>
+                        )}
+                      </Show>
+                    </Show>
+                  </section>
                 )}
               </Show>
 

@@ -37,6 +37,9 @@
 .option:hover {
   background: var(--bg-hover);
 }
+.option:disabled {
+  cursor: progress;
+}
 .option:focus-visible {
   outline-offset: -2px;
 }

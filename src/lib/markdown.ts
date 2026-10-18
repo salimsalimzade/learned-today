@@ -1,6 +1,6 @@
 // Markdown → prose blocks, run on the server for post pages, RSS and Telegram.
 // Raw HTML in a post is shown as text, and links only allow http(s), mailto and site paths.
-import { Marked, type Token, type Tokens } from "marked";
+import { Marked, type RendererObject, type Token, type Tokens } from "marked";
 import { languageLabel, normalizeLanguage } from "./languages";
 import { lowlight } from "./lowlight";
 import type { PostCard, ProseBlock } from "./types";
@@ -14,31 +14,27 @@ function safeHref(href: string) {
   return null;
 }
 
-const marked = new Marked({
-  gfm: true,
-  breaks: false,
-  renderer: {
-    html({ text }) {
-      return escapeHtml(text);
-    },
-    link({ href, title, tokens }) {
-      const text = this.parser.parseInline(tokens);
-      const safe = safeHref(href);
-      if (!safe) return text;
-      const external = /^https?:/i.test(safe);
-      const t = title ? ` title="${escapeHtml(title)}"` : "";
-      const rel = external ? ` rel="nofollow ugc noopener noreferrer"` : "";
-      return `<a href="${escapeHtml(safe)}"${t}${rel}>${text}</a>`;
-    },
-    image({ href, text }) {
-      // No images in notes. Show the alt text as a link instead.
-      const safe = safeHref(href);
-      return safe
-        ? `<a href="${escapeHtml(safe)}" rel="nofollow ugc noopener noreferrer">${escapeHtml(text || href)}</a>`
-        : escapeHtml(text);
-    },
+const renderer: RendererObject = {
+  html({ text }) {
+    return escapeHtml(text);
   },
-});
+  link({ href, title, tokens }) {
+    const text = this.parser.parseInline(tokens);
+    const safe = safeHref(href);
+    if (!safe) return text;
+    const external = /^https?:/i.test(safe);
+    const t = title ? ` title="${escapeHtml(title)}"` : "";
+    const rel = external ? ` rel="nofollow ugc noopener noreferrer"` : "";
+    return `<a href="${escapeHtml(safe)}"${t}${rel}>${text}</a>`;
+  },
+  image({ href, text }) {
+    // No images in notes. Show the alt text as a link instead.
+    const safe = safeHref(href);
+    return safe ? `<a href="${escapeHtml(safe)}" rel="nofollow ugc noopener noreferrer">${escapeHtml(text || href)}</a>` : escapeHtml(text);
+  },
+};
+
+const marked = new Marked({ gfm: true, breaks: false, renderer });
 
 // highlight.js class names → the design system's tok-* classes (styles/syntax.css)
 function tokClass(classes: string[]): string | null {
@@ -57,21 +53,65 @@ function tokClass(classes: string[]): string | null {
 
 type HastNode = { type: string; value?: string; tagName?: string; properties?: { className?: string[] }; children?: HastNode[] };
 
-function hastToHtml(node: HastNode): string {
+/** `open` writes the opening <span> for a tok-* class: with the class on the site, with inline styles in RSS. */
+function hastToHtml(node: HastNode, open: (tok: string) => string): string {
   if (node.type === "text") return escapeHtml(node.value ?? "");
-  const inner = (node.children ?? []).map(hastToHtml).join("");
+  const inner = (node.children ?? []).map((child) => hastToHtml(child, open)).join("");
   if (node.type === "element") {
-    const cls = tokClass(node.properties?.className ?? []);
-    return cls ? `<span class="${cls}">${inner}</span>` : inner;
+    const tok = tokClass(node.properties?.className ?? []);
+    return tok ? `${open(tok)}${inner}</span>` : inner;
   }
   return inner;
 }
 
-export function highlight(code: string, lang: string) {
+function highlightWith(code: string, lang: string, open: (tok: string) => string) {
   const id = normalizeLanguage(lang);
   if (id === "txt" || !lowlight.registered(id)) return escapeHtml(code);
-  return hastToHtml(lowlight.highlight(id, code) as unknown as HastNode);
+  return hastToHtml(lowlight.highlight(id, code) as unknown as HastNode, open);
 }
+
+export function highlight(code: string, lang: string) {
+  return highlightWith(code, lang, (tok) => `<span class="${tok}">`);
+}
+
+// RSS readers drop stylesheets and class names but mostly keep style attributes, so feed code carries its
+// look inline: the post page's code block in the site's dark colours (styles/syntax.css, tokens.css). A dark
+// block reads the same in a light or a dark reader.
+const MONO = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
+const RSS_TOK: Record<string, string> = {
+  "tok-keyword": "color:#c9a2ff;font-weight:500",
+  "tok-string": "color:#8bd49a",
+  "tok-number": "color:#f2b36b",
+  "tok-function": "color:#6fcfd6",
+  "tok-type": "color:#e8c27a",
+  "tok-property": "color:#ededed",
+  "tok-punct": "color:#b0b0b0",
+  "tok-comment": "color:#9a9a9a;font-style:italic",
+};
+const RSS_BOX = "margin:16px 0;border:1px solid #2a2a2a;border-radius:8px;background:#1a1a1a;overflow:hidden";
+const RSS_LANG = `margin:0;padding:6px 16px;border-bottom:1px solid #2a2a2a;color:#9a9a9a;font:12px/16px ${MONO}`;
+const RSS_PRE = `margin:0;padding:12px 16px;overflow-x:auto;background:#1a1a1a;color:#ededed;font:14px/24px ${MONO};tab-size:2;white-space:pre`;
+// Readers often style <code> themselves (a light background inside the dark block); undo that.
+const RSS_CODE = "font:inherit;color:inherit;background:none;padding:0;border:0";
+// Inline code takes the reader's own text colour, so a translucent grey works on light and dark.
+const RSS_INLINE = `padding:1px 5px;border-radius:4px;background:rgba(127,127,127,0.18);font-family:${MONO};font-size:0.875em`;
+
+const rssMarked = new Marked({
+  gfm: true,
+  breaks: false,
+  renderer: {
+    ...renderer,
+    code({ text, lang }) {
+      const id = normalizeLanguage(lang);
+      const code = text.replace(/^(?:[ \t]*\n)+/, "");
+      const html = highlightWith(code, id, (tok) => `<span style="${RSS_TOK[tok]}">`);
+      return `<div style="${RSS_BOX}"><p style="${RSS_LANG}">${escapeHtml(languageLabel(id, "Plain text"))}</p><pre style="${RSS_PRE}"><code style="${RSS_CODE}">${html}</code></pre></div>\n`;
+    },
+    codespan({ text }) {
+      return `<code style="${RSS_INLINE}">${escapeHtml(text)}</code>`;
+    },
+  },
+});
 
 function stripOuter(html: string) {
   const m = html.trim().match(/^<([a-z0-9]+)[^>]*>([\s\S]*)<\/\1>$/i);
@@ -160,7 +200,7 @@ export function toPreview(markdown: string, plainLabel = "Plain text"): Pick<Pos
   return { excerpt: plainText(first).replace(/\s+/g, " ").trim().slice(0, 280), snippet: null };
 }
 
-/** Full HTML for RSS readers, with plain code blocks. */
+/** Full HTML for RSS readers, with highlighted code blocks styled inline. */
 export function toHtml(markdown: string) {
-  return marked.parse(markdown) as string;
+  return rssMarked.parse(markdown) as string;
 }

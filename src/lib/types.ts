@@ -127,3 +127,12 @@ export type FollowTarget =
   | { type: "topic"; slug: string; name: string }
   | { type: "tag"; slug: string; name: string }
   | { type: "author"; slug: string; name: string };
+
+/** What a personal RSS feed follows: tags and authors, like the Telegram bot. Topics have their own feed. */
+export type RssFollow = Extract<FollowTarget, { type: "tag" | "author" }>;
+
+/** The signed-in person's RSS feed (migration 0014). `path` is null until they first follow something. */
+export interface MyRssFeed {
+  path: string | null;
+  follows: RssFollow[];
+}

@@ -161,6 +161,58 @@ isOneToOne: false
       referencedColumns: ["author_id"]
     }
                   ]
+                },"rss_feeds": {
+                  Row: {
+                    "created_at": string,"token": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"token"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"token"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rss_feeds_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rss_feeds_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "public_posts"
+      referencedColumns: ["author_id"]
+    }
+                  ]
+                },"rss_follows": {
+                  Row: {
+                    "created_at": string,"target": Database["public"]['Enums']["follow_target"],"user_id": string,"value": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"target": Database["public"]['Enums']["follow_target"],"user_id"?: string,"value": string
+                  }
+                  Update: {
+                    "created_at"?: string,"target"?: Database["public"]['Enums']["follow_target"],"user_id"?: string,"value"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "rss_follows_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "rss_follows_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "public_posts"
+      referencedColumns: ["author_id"]
+    }
+                  ]
                 },"telegram_chats": {
                   Row: {
                     "blocked_at": string | null,"chat_id": number,"created_at": string
@@ -258,6 +310,32 @@ isOneToOne: false
 "notifications_retry":
 { Args: { "p_error": string,"p_min_wait"?: number,"p_msg_id": number }; Returns: undefined
                            },
+"rss_feed_owner":
+{ Args: { "p_token": string }; Returns: string
+                           },
+"rss_feed_posts":
+{ Args: { "p_limit"?: number,"p_token": string }; Returns: {
+              "author_avatar_url": string | null,
+"author_handle": string | null,
+"author_id": string | null,
+"author_name": string | null,
+"body_md": string | null,
+"excerpt": string | null,
+"id": number | null,
+"published_at": string | null,
+"reactions": Json | null,
+"read_minutes": number | null,
+"tags": (string)[] | null,
+"title": string | null,
+"topic_name": string | null,
+"topic_slug": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "public_posts"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "search_posts":
 { Args: { "max_results"?: number,"q": string }; Returns: {
               "author_avatar_url": string | null,

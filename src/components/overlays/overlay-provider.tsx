@@ -2,7 +2,7 @@
 // component can ask for the command palette or the sign-in dialog.
 import { createContext, createSignal, type ParentProps, useContext } from "solid-js";
 
-export type SignInReason = "react" | "share" | "account";
+export type SignInReason = "react" | "share" | "account" | "rss";
 
 interface Overlays {
   paletteOpen: () => boolean;

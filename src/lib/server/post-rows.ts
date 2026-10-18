@@ -98,6 +98,16 @@ export async function myReactions(userId: string | null, postIds: number[]): Pro
   return map;
 }
 
+/** The display name of a personal RSS feed's owner, or null when no feed has this token (0014). */
+export async function rssFeedOwner(token: string): Promise<string | null> {
+  return unwrap(await createSupabaseServerClient().rpc("rss_feed_owner", { p_token: token }), "rssFeedOwner");
+}
+
+/** The newest notes on a personal RSS feed's tags and authors. */
+export async function rssFeedRows(token: string, limit: number): Promise<PostRow[]> {
+  return unwrap(await createSupabaseServerClient().rpc("rss_feed_posts", { p_token: token, p_limit: limit }), "rssFeedRows");
+}
+
 export const reactionsOf = (row: PostRow) => (row.reactions ?? {}) as ReactionCounts;
 
 export function toCard(row: PostRow, mine: ReactionKind | null): PostCard {

@@ -93,6 +93,38 @@
   font: var(--text-caption);
 }
 
+/* Your RSS feed: what it follows as chips, each with a remove button like the share page's tag input. */
+.follows {
+  margin-top: var(--space-3);
+}
+.remove {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin: 0 0 0 var(--space-1);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.remove:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.remove > [data-icon] {
+  width: 12px;
+  height: 12px;
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
 .buttons {
   display: flex;
   flex-direction: column;

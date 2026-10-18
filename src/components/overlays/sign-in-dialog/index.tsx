@@ -19,18 +19,18 @@ export function SignInDialog() {
 
   const title = () => {
     const reason = overlays.signIn()?.reason;
+    if (reason === "rss") return "Sign in to follow by RSS";
     return reason === "react" ? "Sign in to react" : reason === "share" ? "Sign in to share" : "Sign in";
   };
+  const description = () =>
+    overlays.signIn()?.reason === "rss"
+      ? "Your RSS feed collects the tags and authors you pick at one private link, so it needs an account."
+      : "You can leave one reaction per note. You also need to sign in to share a note.";
 
   const start = (provider: Provider) => signIn.start(provider, overlays.signIn()?.next ?? "/");
 
   return (
-    <Dialog
-      open={!!overlays.signIn()}
-      onOpenChange={(open) => !open && overlays.closeSignIn()}
-      title={title()}
-      description="You can leave one reaction per note. You also need to sign in to share a note."
-    >
+    <Dialog open={!!overlays.signIn()} onOpenChange={(open) => !open && overlays.closeSignIn()} title={title()} description={description()}>
       <DialogBody class={styles.providers}>
         <Button block onClick={() => start("google")} disabled={signIn.pending()}>
           Sign in with Google

@@ -1,20 +1,29 @@
 // RSS 2.0 feeds for the GET routes in src/routes/**/rss.xml.ts. Server only.
 import { toHtml } from "../markdown";
-import { listPosts, profileRow, topicRow } from "../server/post-rows";
+import { listPosts, profileRow, rssFeedOwner, rssFeedRows, topicRow } from "../server/post-rows";
+import { rssFeedPath } from "./rss-feed";
 
-type Filter = { topic?: string; tag?: string; author?: string };
+/** One topic, tag or author, or a personal feed by its token. */
+type Filter = { topic?: string; tag?: string; author?: string; token?: string };
 
 const SITE_NAME = "what-did-i-learn-today";
 
 const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const cdata = (s: string) => `<![CDATA[${s.replace(/]]>/g, "]]]]><![CDATA[>")}]]>`;
 
-/** Returns null when the topic, tag or author doesn't exist, so the route can 404. */
+/** Returns null when the topic, tag, author or personal feed doesn't exist, so the route can 404. */
 export async function rssFeed(filter: Filter, origin: string): Promise<Response | null> {
   let title = SITE_NAME;
   let path = "/";
-  const description = "Learn one small thing every day and share it.";
-  if (filter.topic) {
+  let self: string | null = null;
+  let description = "Learn one small thing every day and share it.";
+  if (filter.token) {
+    const owner = await rssFeedOwner(filter.token);
+    if (!owner) return null;
+    title = `${owner}'s feed · ${SITE_NAME}`;
+    self = rssFeedPath(filter.token);
+    description = "New notes on the tags and authors you follow.";
+  } else if (filter.topic) {
     const topic = await topicRow(filter.topic);
     if (!topic) return null;
     title = `${topic.name} · ${SITE_NAME}`;
@@ -30,7 +39,7 @@ export async function rssFeed(filter: Filter, origin: string): Promise<Response 
     path = `/author/${profile.handle}`;
   }
 
-  const posts = await listPosts(filter, 30);
+  const posts = filter.token ? await rssFeedRows(filter.token, 30) : await listPosts(filter, 30);
   const items = posts
     .map((p) => {
       const link = `${origin}/post/${p.id}`;
@@ -44,7 +53,7 @@ export async function rssFeed(filter: Filter, origin: string): Promise<Response 
 <channel>
 <title>${xml(title)}</title>
 <link>${origin}${path}</link>
-<atom:link href="${origin}${path === "/" ? "" : path}/rss.xml" rel="self" type="application/rss+xml"/>
+<atom:link href="${origin}${self ?? `${path === "/" ? "" : path}/rss.xml`}" rel="self" type="application/rss+xml"/>
 <description>${xml(description)}</description>
 <language>en</language>
 ${posts[0] ? `<lastBuildDate>${new Date(posts[0].published_at ?? "").toUTCString()}</lastBuildDate>` : ""}
@@ -52,7 +61,12 @@ ${items}
 </channel>
 </rss>`;
 
+  // A personal feed's address is its only key: keep it out of shared caches and search engines.
+  const personal = { "Cache-Control": "private, max-age=600", "X-Robots-Tag": "noindex" };
   return new Response(body, {
-    headers: { "Content-Type": "application/rss+xml; charset=utf-8", "Cache-Control": "public, max-age=600" },
+    headers: {
+      "Content-Type": "application/rss+xml; charset=utf-8",
+      ...(filter.token ? personal : { "Cache-Control": "public, max-age=600" }),
+    },
   });
 }
