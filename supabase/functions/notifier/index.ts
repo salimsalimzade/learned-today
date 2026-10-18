@@ -54,17 +54,24 @@ interface Post {
   tags: string[];
 }
 
-/** A new note: the topic, the title in bold, the excerpt, then who wrote it and the tags. */
+/**
+ * A tag as a link to its page on the site. Telegram's own #hashtag detection stops at the first hyphen
+ * ("#type-guards" would only link "#type") and searches the chat instead of opening the tag.
+ */
+const tagLink = (tag: string) =>
+  LINKABLE ? `<a href="${esc(`${SITE_URL}/tag/${encodeURIComponent(tag)}`)}">#${esc(tag)}</a>` : `#${esc(tag)}`;
+
+/** A new note, as in the designs: the topic line and the title in bold, the excerpt, then who wrote it and the tags. */
 function message(post: Post) {
-  const tags = post.tags.map((t) => `#${t}`).join(" ");
+  const tags = post.tags.map(tagLink).join(" ");
   const lines = [
-    `New note · ${esc(post.topic_name)}`,
+    `<b>New note · ${esc(post.topic_name)}</b>`,
     "",
     `<b>${esc(post.title)}</b>`,
     post.excerpt ? esc(post.excerpt) : null,
     "",
     `${esc(post.author_name)} · ${post.read_minutes} min read`,
-    tags ? esc(tags) : null,
+    tags || null,
     LINKABLE ? null : `${SITE_URL}/post/${post.id}`,
   ];
   return lines.filter((line) => line !== null).join("\n");

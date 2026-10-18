@@ -28,6 +28,20 @@ for (const f of t.type.fonts) {
     "}",
   );
 }
+// Metric-matched stand-ins built from installed fonts, used while the web fonts load.
+for (const f of t.type.fallbacks ?? []) {
+  out.push(
+    `/* ${f.usage} */`,
+    "@font-face {",
+    `  font-family: "${f.family}";`,
+    `  src: ${f.local.map((name) => `local("${name}")`).join(", ")};`,
+    `  size-adjust: ${f.sizeAdjust};`,
+    `  ascent-override: ${f.ascentOverride};`,
+    `  descent-override: ${f.descentOverride};`,
+    `  line-gap-override: ${f.lineGapOverride};`,
+    "}",
+  );
+}
 out.push("");
 
 // Colours: light on :root, dark on [data-theme="dark"], and dark for "system" before the

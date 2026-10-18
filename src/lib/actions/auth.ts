@@ -1,24 +1,11 @@
 import { action, redirect } from "@solidjs/router";
-import { isMock } from "../env";
-import { endDemoSession, startDemoSession } from "../server/viewer";
-import { createSupabaseServerClient, requestOrigin } from "../supabase/server";
+import { safeNext } from "../safe-next";
+import { clearAuthCookies, createSupabaseServerClient, requestOrigin } from "../supabase/server";
 import type { Provider } from "../types";
 
-/** Only same-site paths, so ?next= can't send people elsewhere. */
-function safeNext(next: string) {
-  return next.startsWith("/") && !next.startsWith("//") ? next : "/";
-}
-
-/**
- * Demo mode signs in as the sample account and revalidates everything.
- * With Supabase it starts the OAuth flow; /auth/callback finishes it.
- */
+/** Starts the OAuth flow with Google or GitHub; /auth/callback finishes it. */
 export const signIn = action(async (provider: Provider, next: string) => {
   "use server";
-  if (isMock) {
-    startDemoSession();
-    return { ok: true as const };
-  }
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
@@ -28,9 +15,22 @@ export const signIn = action(async (provider: Provider, next: string) => {
   throw redirect(data.url);
 }, "signIn");
 
+/**
+ * Signs this browser out, always. auth.signOut() returns its errors instead of throwing (it throws only on
+ * bugs), and how far it got depends on where it failed:
+ *   Supabase unreachable or erroring on /logout: cookies cleared, but the session isn't revoked there
+ *   reading or refreshing the session failed first:  nothing cleared, the person would stay signed in
+ * So on any error the cookies are deleted here too, and the error is logged. A session left un-revoked at
+ * Supabase expires on its own, and without its cookies this browser can no longer use it.
+ */
 export const signOut = action(async () => {
   "use server";
-  if (isMock) endDemoSession();
-  else await createSupabaseServerClient().auth.signOut();
+  const { error } = await createSupabaseServerClient()
+    .auth.signOut()
+    .catch((e: Error) => ({ error: e }));
+  if (error) {
+    console.error(`signOut: ${error.message}`);
+    clearAuthCookies();
+  }
   return { ok: true as const };
 }, "signOut");

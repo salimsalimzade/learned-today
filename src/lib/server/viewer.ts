@@ -1,27 +1,8 @@
-// Who is making this request. Server only: imported from "use server" functions and routes,
-// never from components (it pulls in @solidjs/start/http, which refuses to load in the browser).
-import { deleteCookie, setCookie } from "@solidjs/start/http";
+// Who is making this request. Server only: imported from "use server" functions and routes, never from
+// components (the Supabase server client reads the request's cookies).
 import { getRequestEvent } from "solid-js/web";
-import { isMock } from "../env";
-import { parseCookieHeader } from "../prefs";
 import { createSupabaseServerClient } from "../supabase/server";
 import type { SessionUser } from "../types";
-
-const DEMO_COOKIE = "lt_demo_user";
-
-/** Demo mode only (no Supabase keys): the sample account that "sign in" uses. */
-const DEMO_USER: SessionUser = { id: "demo", handle: "sebine-q", name: "Səbinə Quliyeva", avatarUrl: null, provider: "github" };
-
-/**
- * Cookies from the request event, not from h3's getCookie: after an action, SolidStart
- * re-renders the page in the same round trip ("single flight") with a rebuilt request that
- * already carries the cookies the action just set. h3's helper would still see the old ones.
- */
-export function requestCookies() {
-  return parseCookieHeader(getRequestEvent()?.request.headers.get("cookie"));
-}
-
-const getCookie = (name: string) => requestCookies()[name];
 
 /** Who is asking: the handle and the signed-in user. */
 export async function getCtx() {
@@ -29,15 +10,32 @@ export async function getCtx() {
   return { viewer: viewer?.handle ?? null, user: viewer };
 }
 
-export async function getViewer(): Promise<SessionUser | null> {
-  if (isMock) {
-    const handle = getCookie(DEMO_COOKIE);
-    return handle ? DEMO_USER : null;
+/**
+ * One lookup per request. A page asks several times (the header's session, then every query through
+ * getCtx), and each lookup is a round trip to Supabase. Keyed by the Request object, not event.locals:
+ * the single-flight re-render after an action shares locals but gets a new Request with the new cookies.
+ */
+const viewers = new WeakMap<Request, Promise<SessionUser | null>>();
+
+export function getViewer(): Promise<SessionUser | null> {
+  const request = getRequestEvent()?.request;
+  if (!request) return loadViewer();
+  let viewer = viewers.get(request);
+  if (!viewer) {
+    viewer = loadViewer();
+    viewers.set(request, viewer);
   }
+  return viewer;
+}
+
+async function loadViewer(): Promise<SessionUser | null> {
   const supabase = createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
-  if (!data.user) return null;
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", data.user.id).single();
+  // getClaims checks the token's signature locally with the project's public keys (fetched once and
+  // cached), where getUser asks the Auth server every time. It falls back to getUser for old HS256 keys.
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims.sub;
+  if (!userId) return null;
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).single();
   if (!profile) return null;
   return {
     id: profile.id,
@@ -45,14 +43,6 @@ export async function getViewer(): Promise<SessionUser | null> {
     name: profile.display_name,
     avatarUrl: profile.avatar_url,
     provider: profile.provider === "google" ? "google" : "github",
+    timeZone: profile.time_zone,
   };
-}
-
-/** Demo mode only: "sign in" as the sample account. */
-export function startDemoSession() {
-  setCookie(DEMO_COOKIE, DEMO_USER.handle, { path: "/", httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
-}
-
-export function endDemoSession() {
-  deleteCookie(DEMO_COOKIE, { path: "/" });
 }

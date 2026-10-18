@@ -32,10 +32,11 @@
     border: var(--hairline) solid var(--border-strong);
     border-bottom: 0;
     border-radius: var(--radius) var(--radius) 0 0;
-    animation: fade-in var(--fade-duration) var(--fade-easing);
   }
-  .dialog[data-closed] {
-    animation: fade-out var(--fade-duration) var(--fade-easing);
+  /* The panel is opaque from its first frame and only its contents fade in, so the page never shows
+     through the text while it opens (on a slow phone that read as a glitch). It closes at once. */
+  .dialog > * {
+    animation: fade-in var(--fade-duration) var(--fade-easing);
   }
   .dialog:focus-visible {
     outline: none;

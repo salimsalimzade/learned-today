@@ -1,4 +1,4 @@
-// Shapes the UI works with. Queries map database rows (or mock data) into these.
+// Shapes the UI works with. Queries map database rows into these.
 
 export type Provider = "github" | "google";
 
@@ -97,6 +97,8 @@ export interface AuthorDetail extends AuthorRef {
 export interface SessionUser extends AuthorRef {
   id: string;
   provider: Provider;
+  /** The zone saved on their profile, or null for "Automatic" (their browser's). */
+  timeZone: string | null;
 }
 
 export interface MyPosts {

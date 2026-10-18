@@ -28,11 +28,9 @@ pnpm build && node .output/server/index.mjs
 
 No preset is set in `vite.config.ts`: Nitro detects Vercel and Netlify when it builds there.
 
-## Supabase and demo mode
+## Supabase
 
-`isMock` (src/lib/env.ts) is true while `VITE_SUPABASE_URL` / `VITE_SUPABASE_PUBLISHABLE_KEY` are empty. Then sign-in is a demo cookie for a sample account, and every post read fails with "Supabase is not configured". Posts, topics, search, RSS and reactions always read Supabase: the queries in `src/lib/queries/` call `src/lib/server/post-rows.ts`, which reads `public_posts` and calls the `feed_page`, `search_posts`, `create_post` and `set_reaction` functions. `supabase/seed.sql` adds the topics and a set of sample notes by fake authors.
-
-- Auth (`actions/auth.ts`, `routes/auth/callback.ts`), the Telegram webhook and the notifier are written for Supabase. Demo sign-in only runs without keys.
+The app needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`; without them every server call fails with "Supabase is not configured". Posts, topics, search, RSS and reactions read Supabase: the queries in `src/lib/queries/` call `src/lib/server/post-rows.ts`, which reads `public_posts` and calls the `feed_page`, `search_posts`, `create_post` and `set_reaction` functions. `supabase/seed.sql` adds the topics and a set of sample notes by fake authors.
 
 ## Folders
 
@@ -61,17 +59,19 @@ src/
 scripts/
   build-tokens.mjs   tokens.json → tokens.css
 supabase/
-  migrations/        0001 schema · 0002 RLS · 0003 triggers · 0004 search · 0005 posts API · 0006 Telegram queue · 0007 digests · 0008 rich messages · 0009 no topic follows · 0010 recaps from now
+  migrations/        0001 schema · 0002 RLS · 0003 triggers · 0004 search · 0005 posts API · 0006 Telegram queue · 0007 digests · 0008 rich messages · 0009 no topic follows · 0010 recaps from now · 0011 feed time zone · 0012/0013 grants
   functions/notifier Edge Function that sends queued Telegram messages
 ```
 
 ## How a request flows
 
 1. `entry-server.tsx` reads the `theme` cookie and renders `<html lang="en" data-theme>`. A tiny inline script handles the "System" theme before paint.
-   Day headers ("Today", "Yesterday") use the visitor's time zone. Another inline script reads it from the browser (`Intl`, no permission prompt, not their location) into the `tz` cookie; if it differs from the zone the server rendered with, the page reloads once. The server reads the cookie (`readTimeZone` in `lib/prefs.ts`) and passes it to `feed_page` (migration 0011), so days are cut at the visitor's midnight. Without a usable zone the default `DEFAULT_TIME_ZONE` (Asia/Baku, `lib/env.ts`) applies.
+   Day headers ("Today", "Yesterday") use the visitor's time zone. Another inline script reads it from the browser (`Intl`, no permission prompt, not their location) into the `tz` cookie; if it differs from the zone the server rendered with, the page reloads once. The server reads the cookie (`readTimeZone` in `lib/prefs.ts`) and passes it to `feed_page` (migration 0011), so days are cut at the visitor's midnight. Without a usable zone the default `DEFAULT_TIME_ZONE` (Asia/Baku, `lib/env.ts`) applies. The footer's time zone menu (`components/layout/time-zone-picker`) lets people pick a zone themselves: it goes in the `tz_choice` cookie, which `readTimeZone` prefers and which turns the detection off, and the page reloads. "Automatic" deletes it. Signed in, the pick is also saved as `profiles.time_zone` (0001, null = Automatic), and a zone saved there wins on every device: `/auth/callback` puts it in the cookie at sign-in (or saves this browser's pick when the account has none), and the menu switches a device over when the account's zone was changed elsewhere.
 2. `app.tsx` mounts Header, Footer and the overlays once. Routes render into `<main>`.
 3. Routes call queries through `createAsync`. Query bodies run on the server, so the Supabase keys never reach the browser.
 4. Actions (reactions, publishing, sign-in) are server functions too. Reactions update optimistically and revalidate nothing; sign-in revalidates everything.
+5. `src/middleware.ts` wraps every request the Worker handles (static files are served before it). It rate-limits per IP with the Workers rate-limiting bindings in `wrangler.jsonc` (`RATE_LIMIT`: 120 pages or server-function calls per 10 s; `RATE_LIMIT_RSS`: 30 feed fetches a minute; the Telegram webhook is exempt), and sets security headers: a Content-Security-Policy whose `script-src` takes a per-request nonce (entry-server.tsx puts it on the inline scripts and passes it to Solid), `frame-ancestors 'none'`, nosniff, HSTS and a strict referrer policy. zod runs `jitless` because the policy blocks `new Function`. SolidStart itself rejects cross-site server-function calls (`Sec-Fetch-Site` / `Origin`). `?next=` after sign-in goes through `lib/safe-next.ts`, which parses it as the browser will, so `/\evil.com` can't leave the site.
+6. `getViewer` (lib/server/viewer.ts) runs once per request, and checks the session token locally with `getClaims`, so a page costs one profile query for the signed-in person instead of an Auth round trip per query.
 
 Single-flight note: after an action, SolidStart re-renders the page in the same round trip with a rebuilt request that already has the new cookies. Read cookies from `getRequestEvent().request` (as `lib/server/viewer.ts` does), not h3's `getCookie`, or the re-render sees the old session.
 
@@ -79,7 +79,7 @@ Single-flight note: after an action, SolidStart re-renders the page in the same 
 
 **Tokens.** `src/styles/tokens.json` is the source. `pnpm tokens` writes `tokens.css`: the `@font-face` rules, colours for light, dark and "system" (a `prefers-color-scheme` fallback before JS runs), spacing, radius, sizes, strokes, layers, `--font-sans` / `--font-mono`, a `--text-<name>` font shorthand and `--tracking-<name>` for each type style, and `.type-<name>` utility classes. Don't edit `tokens.css` by hand.
 
-**Fonts.** Inter (variable, opsz 14–32, wght 100–900) and JetBrains Mono (variable, wght 100–800), roman and italic, from Google Fonts. Each is subset to a single Latin file, limited by `unicode-range`. Italic stays because prose `em` and code comments use it. Licences sit next to them in `styles/fonts/`. Mono text turns ligatures off so `!==` and `->` show as typed.
+**Fonts.** Inter (variable, opsz 14–32, wght 100–900) and JetBrains Mono (variable, wght 100–800), roman and italic, from Google Fonts. Each is subset to a single Latin file, limited by `unicode-range`. Italic stays because prose `em` and code comments use it. Licences sit next to them in `styles/fonts/`. Mono text turns ligatures off so `!==` and `->` show as typed. Until Inter arrives, text shows in "Inter Fallback" (`type.fallbacks` in tokens.json): local Arial resized to Inter's width and line metrics, so the page barely moves when Inter swaps in.
 
 **CSS modules.** Every component has `<name>.module.css` beside its `index.tsx`. Class names are kebab-case (`styles["text-field"]`, `styles.trigger`); built names are `<class>-<hash>`. Only three files are global: `tokens.css`, `base.css` (element defaults, focus ring, `.sr-only`) and `syntax.css` (code colours, used by HTML highlighted on the server). Page layout lives in `styles/pages/*.module.css`.
 
@@ -104,7 +104,7 @@ Google and GitHub through Supabase OAuth (PKCE). `signIn` asks Supabase for the 
 5. The notifier reads up to 25 messages with `notifications_read`, which hides them for 2 minutes (the visibility timeout), so a crash mid-send brings them back. Then it reports each one: `notifications_ack` archives it; `notifications_fail` moves it to the dead-letter queue `telegram_notifications_failed` with the error (blocked chat, bad request, post gone); `notifications_retry` hides it again for 30 s, 2 min, 10 min, then 1 h (or Telegram's `retry_after`), and dead-letters it after the 5th attempt. Chats that blocked the bot are marked.
 6. Archived (sent) messages and dead letters are kept for 14 days (daily `pg_cron` cleanup), then deleted. To look: `select * from pgmq.q_telegram_notifications` (waiting), `pgmq.a_telegram_notifications` (sent), `pgmq.q_telegram_notifications_failed` (dead letters).
 7. A `pg_cron` job (`telegram-digests`, every minute) calls `enqueue_due_digests()`: for each schedule whose slot has passed it queues a `{"kind": "digest"}` message and wakes the notifier, which builds the text with `digest_text()` and sends it like any other message, with the same retries. A recap with nothing new is not sent. Changing a schedule starts it fresh, so slots before the change don't count.
-8. Messages are Telegram HTML with inline buttons (migration 0008). A new note is `New note · Topic`, the bold title, the excerpt, then author, reading time and tags, with **Read** and **Stop following** (`stop:<post id>`, which drops the tag, author or "all" follow that brought the note, most specific first, and leaves the note in place). A recap is a bold headline, then notes grouped by topic with linked titles, with **Open feed** and **Subscriptions** (`list`). A new follow is confirmed with **View tag/author** and **Cancel** (`undo:<payload>`). The webhook answers button presses (`callback_query`), so it must receive that update type; the bot token, when set there, is used only to clear the button's spinner. URL buttons are left out when `SITE_URL` is localhost, since Telegram rejects them.
+8. Messages are Telegram HTML with inline buttons (migration 0008). A new note is `New note · Topic` and the title, both bold, the excerpt, then author, reading time and tags (each a link to its tag page, since Telegram's own hashtags stop at a hyphen), with **Read** and **Stop following** (`stop:<post id>`, which drops the tag, author or "all" follow that brought the note, most specific first, and leaves the note in place). A recap is a bold headline, then notes grouped by topic with linked titles, with **Open feed** and **Subscriptions** (`list`). A new follow is confirmed with `You're following: <name>` (an author's display name, not the @handle, which Telegram would link to a Telegram account), **View tag/author** and **Cancel** (`undo:<payload>`). The webhook answers button presses (`callback_query`), so it must receive that update type; the bot token, when set there, is used only to clear the button's spinner. URL buttons are left out when `SITE_URL` is localhost, since Telegram rejects them.
 
 ## RSS
 
@@ -130,4 +130,4 @@ One flat, curated list of 200 topics in `supabase/seed.sql` (Git, JavaScript, Ki
 2. Fill `.env` from `.env.example` (URL, publishable key, secret key).
 3. Create GitHub and Google OAuth apps, add their keys, enable them in `supabase/config.toml` (or the dashboard).
 4. Store `project_url` and `service_role_key` in Vault (see the end of 0003) so pg_cron can reach the notifier.
-5. `supabase secrets set TELEGRAM_BOT_TOKEN=… SITE_URL=…`, deploy `notifier`, then call Telegram's `setWebhook` (see `routes/api/telegram.ts`).
+5. `supabase secrets set TELEGRAM_BOT_TOKEN=… SITE_URL=…`, deploy `notifier`, then call Telegram's `setWebhook` (see `routes/api/telegram.ts`). On every push to `main` the pipeline runs `supabase db push` (new migrations, before the Worker deploys) and redeploys `notifier` (after it), once the variable `SUPABASE_PROJECT_REF` and the secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are set. Until then do both by hand, or Telegram keeps sending the old message format. `db push` only runs migrations the project hasn't recorded, so an edit to an already-applied one (like the `time_zone` column folded into 0001) needs `supabase db reset --linked` once, which wipes the database.

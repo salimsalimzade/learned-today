@@ -7,6 +7,7 @@ import type { Owner } from "solid-js";
 import { normalizeLanguage } from "~/lib/languages";
 import { lowlight } from "~/lib/lowlight";
 import { codeBlockView } from "./code-block-view";
+import { PLACEHOLDER } from "./placeholder";
 import { SlashCommands, type SlashRender } from "./slash";
 
 /** "```js" then Enter turns the line into a JavaScript code block (Space works too, via TipTap's input rule). */
@@ -62,7 +63,7 @@ export function editorExtensions(opts: { owner: Owner | null; slash: SlashRender
       },
     }),
     CodeBlockLowlight.extend({ addNodeView: () => codeBlockView(opts.owner) }).configure({ lowlight, defaultLanguage: "txt" }),
-    Placeholder.configure({ placeholder: () => "What did you learn? Type / to add a block." }),
+    Placeholder.configure({ placeholder: () => PLACEHOLDER }),
     Markdown,
     FenceEnter,
     SubmitShortcut(opts.onSubmit),

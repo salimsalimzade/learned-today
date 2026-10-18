@@ -68,3 +68,10 @@
   color: var(--text-muted);
   opacity: 1;
 }
+/* iOS Safari zooms the whole page into a field typed at under 16px as soon as it's focused, and the page
+   lurches sideways. Only iOS supports -webkit-touch-callout, so everywhere else keeps the 14px design. */
+@supports (-webkit-touch-callout: none) {
+  .draft {
+    font-size: 16px;
+  }
+}

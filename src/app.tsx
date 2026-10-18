@@ -4,7 +4,7 @@ import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/syntax.css";
 import { Meta, MetaProvider, Title } from "@solidjs/meta";
-import { Router, useNavigate } from "@solidjs/router";
+import { Router, useIsRouting } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
 import { type ParentProps, Suspense } from "solid-js";
 import styles from "./app.module.css";
@@ -14,15 +14,26 @@ import { CommandPalette } from "./components/overlays/command-palette";
 import { OverlayProvider, useOverlays } from "./components/overlays/overlay-provider";
 import { ShortcutsDialog } from "./components/overlays/shortcuts-dialog";
 import { SignInDialog } from "./components/overlays/sign-in-dialog";
+import { useShare } from "./components/overlays/use-share";
 import { ToastRegion } from "./components/ui-kit";
+import { flag } from "./lib/cx";
 import { useShortcut } from "./lib/shortcuts";
 import { ThemeProvider, useTheme } from "./lib/theme";
+
+/**
+ * A thin bar across the top while the router loads the next page (its code or its data). The current page
+ * stays until the next one is ready, so on a slow connection a tap would otherwise look like it did nothing.
+ */
+function RouteProgress() {
+  const routing = useIsRouting();
+  return <div class={styles.progress} data-active={flag(routing())} aria-hidden="true" />;
+}
 
 /** Root layout: header and footer around every route, overlays mounted once. */
 function Shell(props: ParentProps) {
   const overlays = useOverlays();
   const theme = useTheme();
-  const navigate = useNavigate();
+  const share = useShare();
 
   useShortcut("/", (e) => {
     e.preventDefault();
@@ -30,7 +41,7 @@ function Shell(props: ParentProps) {
   });
   useShortcut("n", (e) => {
     e.preventDefault();
-    navigate("/share");
+    share.open();
   });
   useShortcut("t", () => theme.cycle());
   useShortcut("?", () => overlays.setShortcutsOpen(true));
@@ -42,6 +53,7 @@ function Shell(props: ParentProps) {
       <a class={styles.skip} href="#main">
         Skip to content
       </a>
+      <RouteProgress />
       <div class={styles.app}>
         <Header />
         <div class={styles.body}>

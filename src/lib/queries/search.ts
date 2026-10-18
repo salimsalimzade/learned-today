@@ -1,6 +1,6 @@
 import { query } from "@solidjs/router";
 import { fold } from "../format";
-import { authorCounts, listPosts, searchRows, tagCounts, toCards, topicCounts, topicRows } from "../server/post-rows";
+import { authorCounts, listFacets, searchRows, tagCounts, toCards, topicCounts, topicRows } from "../server/post-rows";
 import { getCtx } from "../server/viewer";
 import type { SearchResults } from "../types";
 
@@ -16,7 +16,7 @@ export const searchAll = query(async (q: string): Promise<SearchResults> => {
   if (!needle) return { posts: [], tags: [], topics: [], authors: [] };
   const hit = (s: string) => fold(s).includes(needle);
 
-  const [found, all, topicList] = await Promise.all([searchRows(term, 6), listPosts({}), topicRows()]);
+  const [found, all, topicList] = await Promise.all([searchRows(term, 6), listFacets(), topicRows()]);
   // Topics match in either language, whatever the reader's language is.
   const matching = new Set(topicList.filter((t) => fold(`${t.name} ${t.slug}`).includes(needle)).map((t) => t.slug));
   return {

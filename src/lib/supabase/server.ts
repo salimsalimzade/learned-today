@@ -27,6 +27,20 @@ export function createSupabaseServerClient() {
   });
 }
 
+/** @supabase/ssr's session cookies: sb-<ref>-auth-token, split into .0, .1… when long, and the PKCE code verifier. */
+const AUTH_COOKIE = /^sb-.+-auth-token(?:-code-verifier)?(?:\.\d+)?$/;
+
+/**
+ * Deletes this request's Supabase session cookies. For when auth.signOut() fails before it clears them
+ * itself (it can't read or refresh the session), so the browser is signed out whatever Supabase said.
+ */
+export function clearAuthCookies() {
+  const header = getRequestEvent()?.request.headers.get("cookie");
+  for (const name of Object.keys(parseCookieHeader(header))) {
+    if (AUTH_COOKIE.test(name)) setCookie(name, "", { path: "/", maxAge: 0 });
+  }
+}
+
 /** Secret-key client that bypasses RLS. Only for trusted server code such as the Telegram webhook. */
 export function createSupabaseAdminClient() {
   const key = process.env.SUPABASE_SECRET_KEY;

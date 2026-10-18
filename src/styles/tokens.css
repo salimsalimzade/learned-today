@@ -34,6 +34,15 @@
   font-display: swap;
   unicode-range: U+0000-024F, U+0259, U+02B0-036F, U+1E00-1EFF, U+2000-206F, U+20A0-20CF, U+2100-214F, U+2190-21FF, U+2200-22FF, U+2318, U+2325-232B, U+23CE, U+25A0-25FF, U+FEFF, U+FFFD;
 }
+/* Arial resized to Inter 4's average width and line metrics. Text shows in it until Inter arrives (font-display: swap), so lines wrap at almost the same places and the page barely moves when Inter swaps in. */
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 107.4%;
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+}
 
 :root, [data-theme="light"] {
   --bg: #fafaf7; /* Page background, the paper. Also the gap colour behind sticky day headers and the header bar. */
@@ -141,7 +150,7 @@
   --layer-dialog: 50; /* Dialogs, the command palette and their scrim. */
   --layer-toast: 60; /* Toast region, above everything. */
   /* type */
-  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  --font-sans: Inter, "Inter Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --text-display: 650 32px/40px var(--font-sans); /* The post title on a post page, and topic, tag or author page titles. One per page. */
   --tracking-display: -0.02em;

@@ -1,8 +1,9 @@
 import { A, createAsync, useLocation } from "@solidjs/router";
-import { Show } from "solid-js";
 import { Button, ButtonLink, Icon, Kbd } from "~/components/ui-kit";
+import { flag } from "~/lib/cx";
 import { getSession } from "~/lib/queries/session";
 import { useOverlays } from "../../overlays/overlay-provider";
+import { useShare } from "../../overlays/use-share";
 import { AccountMenu } from "../account-menu";
 import styles from "./header.module.css";
 
@@ -11,6 +12,7 @@ export function Header() {
   const overlays = useOverlays();
   const location = useLocation();
   const session = createAsync(() => getSession());
+  const share = useShare();
 
   return (
     <header class={styles.header}>
@@ -27,14 +29,20 @@ export function Header() {
             <Kbd>/</Kbd>
           </span>
         </Button>
-        <Show when={location.pathname !== "/share"}>
-          <ButtonLink class={styles.share} variant="primary" href="/share" aria-label="Share">
-            <span class={styles.narrow}>
-              <Icon name="plus" size={20} />
-            </span>
-            <span class={styles.wide}>Share</span>
-          </ButtonLink>
-        </Show>
+        {/* Hidden on /share rather than removed, so search and the account button don't jump sideways. */}
+        <ButtonLink
+          class={styles.share}
+          variant="primary"
+          href="/share"
+          aria-label="Share"
+          data-hidden={flag(location.pathname === "/share")}
+          on:click={share.onLinkClick}
+        >
+          <span class={styles.narrow}>
+            <Icon name="plus" size={20} />
+          </span>
+          <span class={styles.wide}>Share</span>
+        </ButtonLink>
         <AccountMenu user={session()} />
       </div>
     </header>

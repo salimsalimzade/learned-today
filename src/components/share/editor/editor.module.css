@@ -37,6 +37,10 @@
 .toolbar::-webkit-scrollbar {
   display: none;
 }
+/* The empty toolbar of the loading placeholder (placeholder.tsx): one button row high. */
+.toolbar[data-placeholder] {
+  min-height: var(--control-h);
+}
 
 /* Toolbar buttons are ghost buttons; pressed ones (bold on, list on…) use accent-soft. */
 .tool {
@@ -147,10 +151,11 @@
   background: var(--bg-raised);
   border: var(--hairline) solid var(--border-strong);
   border-radius: var(--radius);
-  animation: fade-in var(--fade-duration) var(--fade-easing);
 }
-.menu[data-closed] {
-  animation: fade-out var(--fade-duration) var(--fade-easing);
+/* The panel is opaque from its first frame and only its contents fade in, so the page never shows
+   through the text while it opens (on a slow phone that read as a glitch). It closes at once. */
+.menu > * {
+  animation: fade-in var(--fade-duration) var(--fade-easing);
 }
 .menu:focus-visible {
   outline: none;
@@ -218,11 +223,6 @@
 
 @keyframes fade-in {
   from {
-    opacity: 0;
-  }
-}
-@keyframes fade-out {
-  to {
     opacity: 0;
   }
 }

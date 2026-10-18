@@ -1,0 +1,37 @@
+/* The text-field input and the select list; this only adds the chevron button over the input's end. */
+@layer ui {
+  .control {
+    position: relative;
+    display: flex;
+  }
+
+  /* Scoped by .control so it beats the text field's own padding, also in the ui layer, whatever the CSS order. */
+  .control .input {
+    padding-inline-end: 40px;
+  }
+
+  .trigger {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+
+  .trigger:focus-visible {
+    outline: var(--focus-width) solid var(--focus);
+    outline-offset: var(--focus-offset);
+    border-radius: var(--radius);
+  }
+
+  .icon {
+    display: grid;
+    place-items: center;
+  }
+}

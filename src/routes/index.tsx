@@ -48,7 +48,6 @@ function FeedPage(props: { cursor: string | null; last: boolean; first: boolean;
 export default function Feed() {
   const [cursors, setCursors] = createSignal<(string | null)[]>([null]);
   useListKeys();
-  console.log(cursors());
   return (
     <Page>
       <h1 class="sr-only">Feed</h1>

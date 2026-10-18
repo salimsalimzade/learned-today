@@ -1,5 +1,5 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { isMock, SITE_URL } from "~/lib/env";
+import { SITE_URL } from "~/lib/env";
 import { normalizeTag, TAG_PATTERN } from "~/lib/schemas/post";
 import { createSupabaseAdminClient } from "~/lib/supabase/server";
 import { parseStartPayload, startPayload } from "~/lib/telegram";
@@ -59,13 +59,9 @@ const MAX_FOLLOWS = 50;
 /** Most filters one /digest or /schedule can take. */
 const MAX_FILTERS = 10;
 
-// Demo mode (no Supabase keys) keeps follows in memory, per server process.
-const demoFollows = new Map<number, Follow[]>();
-
 const db = () => createSupabaseAdminClient();
 
 async function listFollows(chatId: number): Promise<Follow[]> {
-  if (isMock) return demoFollows.get(chatId) ?? [];
   const { data } = await db().from("follows").select("target, value").eq("chat_id", chatId).neq("target", "topic").order("created_at");
   return (data ?? []) as Follow[];
 }
@@ -76,10 +72,6 @@ async function addFollow(chatId: number, f: Follow): Promise<"added" | "exists" 
   const current = await listFollows(chatId);
   if (current.some((x) => same(x, f))) return "exists";
   if (current.length >= MAX_FOLLOWS) return "limit";
-  if (isMock) {
-    demoFollows.set(chatId, [...current, f]);
-    return "added";
-  }
   await db().from("telegram_chats").upsert({ chat_id: chatId, blocked_at: null }, { onConflict: "chat_id" });
   await db().from("follows").insert({ chat_id: chatId, target: f.target, value: f.value });
   return "added";
@@ -88,25 +80,19 @@ async function addFollow(chatId: number, f: Follow): Promise<"added" | "exists" 
 async function removeFollow(chatId: number, f: Follow): Promise<boolean> {
   const current = await listFollows(chatId);
   if (!current.some((x) => same(x, f))) return false;
-  if (isMock)
-    demoFollows.set(
-      chatId,
-      current.filter((x) => !same(x, f)),
-    );
-  else await db().from("follows").delete().eq("chat_id", chatId).eq("target", f.target).eq("value", f.value);
+  await db().from("follows").delete().eq("chat_id", chatId).eq("target", f.target).eq("value", f.value);
   return true;
 }
 
 async function clearFollows(chatId: number) {
-  if (isMock) return void demoFollows.delete(chatId);
   await db().from("follows").delete().eq("chat_id", chatId);
   await db().from("digest_schedules").delete().eq("chat_id", chatId);
 }
 
-async function authorExists(handle: string) {
-  if (isMock) return true;
-  const { data } = await db().from("profiles").select("handle").eq("handle", handle).maybeSingle();
-  return !!data;
+/** The author's display name, or null when no one has that handle. */
+async function authorName(handle: string): Promise<string | null> {
+  const { data } = await db().from("profiles").select("display_name").eq("handle", handle).maybeSingle();
+  return data ? data.display_name : null;
 }
 
 const tx = {
@@ -151,7 +137,6 @@ Find tags and authors on ${SITE_URL}`,
   list: (items: string) => `You follow:\n${items}`,
   none: "You don't follow anything yet. Try /follow #deploy or /follow all.",
   stopped: "Unsubscribed from everything. Use /follow to start again.",
-  needsDatabase: "Recaps need the database, which isn't connected in demo mode.",
   tooManyFilters: `Use up to ${MAX_FILTERS} filters at a time.`,
   digestNothingFollowed:
     "You don't follow anything yet. Follow something first (/follow #deploy), or ask for specific notes: /digest #deploy.",
@@ -181,7 +166,11 @@ function describe(f: Follow) {
   return f.target === "tag" ? `#${f.value}` : `@${f.value}`;
 }
 
-type Parsed = { follow: Follow; label: string } | { reply: string };
+/**
+ * `label` names the follow in plain replies ("@rauf-aliyev"). `title` is what the confirmation shows in bold:
+ * an author's name, as in the designs, so Telegram doesn't turn the handle into a link to a Telegram account.
+ */
+type Parsed = { follow: Follow; label: string; title?: string } | { reply: string };
 
 /**
  * What the person typed after /follow or /unfollow: "all", "#tag" or "@author".
@@ -191,8 +180,9 @@ async function parseTarget(arg: string, mustExist = true): Promise<Parsed> {
   if (arg.startsWith("@")) {
     const handle = arg.slice(1).toLowerCase();
     if (!HANDLE_PATTERN.test(handle)) return { reply: tx.badAuthor };
-    if (mustExist && !(await authorExists(handle))) return { reply: tx.noAuthor };
-    return { follow: { target: "author", value: handle }, label: `@${handle}` };
+    const name = mustExist ? await authorName(handle) : null;
+    if (mustExist && !name) return { reply: tx.noAuthor };
+    return { follow: { target: "author", value: handle }, label: `@${handle}`, title: name ?? undefined };
   }
   if (arg.startsWith("#")) {
     const tag = normalizeTag(arg);
@@ -208,8 +198,9 @@ async function parsePayload(payload: string): Promise<Parsed | null> {
   const target = parseStartPayload(payload);
   if (!target) return null;
   if (target.type === "tag") return { follow: { target: "tag", value: target.slug }, label: `#${target.slug}` };
-  if (!(await authorExists(target.slug))) return { reply: tx.noAuthor };
-  return { follow: { target: "author", value: target.slug }, label: `@${target.slug}` };
+  const name = await authorName(target.slug);
+  if (!name) return { reply: tx.noAuthor };
+  return { follow: { target: "author", value: target.slug }, label: `@${target.slug}`, title: name };
 }
 
 const FOLLOW_SCOPES = { all: "anywhere", tag: "with this tag", author: "by this author" } as const;
@@ -226,12 +217,12 @@ function undoTarget(data: string): Follow | null {
   return target ? { target: target.type, value: target.slug } : null;
 }
 
-/** "You're following: #deploy", what that means, and buttons to look at it or take it back. */
-function followed(f: Follow, label: string): Reply {
+/** "You're following: Rauf Aliyev", what that means, and buttons to look at it or take it back. */
+function followed(f: Follow, title: string): Reply {
   const page = f.target === "all" ? SITE_URL : `${SITE_URL}/${f.target}/${encodeURIComponent(f.value)}`;
   const undo = undoData(f);
   return {
-    html: `<b>You're following: ${esc(label)}</b>\n\nI'll message you here when a new note is published ${FOLLOW_SCOPES[f.target]}.`,
+    html: `<b>You're following: ${esc(title)}</b>\n\nI'll message you here when a new note is published ${FOLLOW_SCOPES[f.target]}.`,
     buttons: [
       { text: f.target === "all" ? "Open feed" : `View ${f.target}`, url: page },
       ...(undo ? [{ text: "Cancel", callback_data: undo }] : []),
@@ -245,7 +236,7 @@ async function follow(chatId: number, parsed: Parsed): Promise<Reply> {
   if (result === "exists") return tx.exists(parsed.label);
   if (result === "limit") return tx.limit;
   const recap = await getSchedule(chatId);
-  if (!recap) return followed(parsed.follow, parsed.label);
+  if (!recap) return followed(parsed.follow, parsed.title ?? parsed.label);
   return recap.everything || recap.tags || recap.authors ? tx.addedBesideFilteredRecap(parsed.label) : tx.addedToRecap(parsed.label);
 }
 
@@ -296,7 +287,6 @@ function describeFilters(r: Recap) {
 }
 
 async function getSchedule(chatId: number): Promise<Recap | null> {
-  if (isMock) return null;
   const { data } = await db().from("digest_schedules").select("frequency, everything, tags, authors").eq("chat_id", chatId).maybeSingle();
   return data ? { ...data, frequency: data.frequency as Recap["frequency"] } : null;
 }
@@ -326,7 +316,6 @@ async function saveRecap(chatId: number, recap: { frequency: Recap["frequency"];
 
 /** /schedule daily · /schedule weekly #git @rauf · /schedule off · /schedule (show it) */
 async function schedule(chatId: number, arg: string): Promise<string> {
-  if (isMock) return tx.needsDatabase;
   const words = arg.split(/[\s,]+/).filter(Boolean);
   if (!words.length) {
     const current = await getSchedule(chatId);
@@ -354,7 +343,6 @@ async function schedule(chatId: number, arg: string): Promise<string> {
  * those, followed or not. /digest daily and /digest weekly are /schedule by another name.
  */
 async function digest(chatId: number, arg: string): Promise<Reply> {
-  if (isMock) return tx.needsDatabase;
   const words = arg.split(/[\s,]+/).filter(Boolean);
   if (words.length > MAX_FILTERS) return tx.tooManyFilters;
   if (["daily", "weekly", "off"].includes(words[0]?.toLowerCase())) return schedule(chatId, arg);
@@ -392,7 +380,6 @@ const DIGEST_BUTTONS: Button[] = [
 
 /** The follow that brought a note to a chat, most specific first: a tag, then the author, then "all". */
 async function followBehind(chatId: number, postId: number): Promise<Follow | null> {
-  if (isMock) return null;
   const [follows, { data: post }] = await Promise.all([
     listFollows(chatId),
     db().from("public_posts").select("tags, author_handle").eq("id", postId).maybeSingle(),
@@ -468,9 +455,18 @@ async function handleCallback(query: NonNullable<TelegramUpdate["callback_query"
   return Response.json({ method: "answerCallbackQuery", callback_query_id: query.id });
 }
 
+/** Compares in constant time, so how long a wrong guess takes says nothing about how much of it was right. */
+function sameSecret(given: string, secret: string) {
+  const a = new TextEncoder().encode(given);
+  const b = new TextEncoder().encode(secret);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < b.length; i++) diff |= (a[i] ?? 0) ^ b[i];
+  return diff === 0;
+}
+
 export async function POST(event: APIEvent) {
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!secret || event.request.headers.get("x-telegram-bot-api-secret-token") !== secret) {
+  if (!secret || !sameSecret(event.request.headers.get("x-telegram-bot-api-secret-token") ?? "", secret)) {
     return new Response("Forbidden", { status: 403 });
   }
 

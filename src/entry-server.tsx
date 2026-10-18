@@ -1,36 +1,43 @@
 // @refresh reload
 import { createHandler, StartServer } from "@solidjs/start/server";
+import { getRequestEvent } from "solid-js/web";
 import { readPrefs, readTimeZone, themeBootScript, timeZoneBootScript } from "./lib/prefs";
 
-export default createHandler(() => (
-  <StartServer
-    document={({ assets, children, scripts }) => {
-      // An explicit light/dark choice is rendered straight away; "system" is settled by the boot script.
-      const prefs = readPrefs();
-      return (
-        <html lang="en" data-theme={prefs.theme === "system" ? undefined : prefs.theme}>
-          <head>
-            <meta charset="utf-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <meta name="color-scheme" content="light dark" />
-            {/* .ico first for old browsers; the SVG (listed last) wins in browsers that support it and follows dark mode. */}
-            <link rel="icon" href="/favicon.ico" sizes="48x48" />
-            <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
-            <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-            <link rel="alternate" type="application/rss+xml" title="what-did-i-learn-today" href="/rss.xml" />
-            <script innerHTML={themeBootScript} />
-            <script innerHTML={timeZoneBootScript(readTimeZone())} />
-            {/* Layer order before any stylesheet loads: base element rules, then ui-kit. Unlayered
-                component and page modules beat both. Repeated at the top of tokens.css. */}
-            <style innerHTML="@layer base, ui;" />
-            {assets}
-          </head>
-          <body>
-            <div id="app">{children}</div>
-            {scripts}
-          </body>
-        </html>
-      );
-    }}
-  />
-));
+export default createHandler(
+  () => (
+    <StartServer
+      document={({ assets, children, scripts }) => {
+        // An explicit light/dark choice is rendered straight away; "system" is settled by the boot script.
+        const prefs = readPrefs();
+        // The Content-Security-Policy (src/middleware.ts) only runs inline scripts that carry this nonce.
+        const nonce = getRequestEvent()?.locals.nonce;
+        return (
+          <html lang="en" data-theme={prefs.theme === "system" ? undefined : prefs.theme}>
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <meta name="color-scheme" content="light dark" />
+              {/* .ico first for old browsers; the SVG (listed last) wins in browsers that support it and follows dark mode. */}
+              <link rel="icon" href="/favicon.ico" sizes="48x48" />
+              <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+              <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+              <link rel="alternate" type="application/rss+xml" title="what-did-i-learn-today" href="/rss.xml" />
+              <script nonce={nonce} innerHTML={themeBootScript} />
+              <script nonce={nonce} innerHTML={timeZoneBootScript(readTimeZone())} />
+              {/* Layer order before any stylesheet loads: base element rules, then ui-kit. Unlayered
+                  component and page modules beat both. Repeated at the top of tokens.css. */}
+              <style innerHTML="@layer base, ui;" />
+              {assets}
+            </head>
+            <body>
+              <div id="app">{children}</div>
+              {scripts}
+            </body>
+          </html>
+        );
+      }}
+    />
+  ),
+  // Solid's own inline scripts (hydration data, streamed resources) get the same nonce.
+  (event) => ({ nonce: event.locals.nonce }),
+);

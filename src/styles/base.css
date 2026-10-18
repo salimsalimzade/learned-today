@@ -53,6 +53,13 @@
     outline-offset: var(--focus-offset);
   }
 
+  /* Kobalte mounts popovers, menus, select lists and tooltips at the page's top-left corner and moves them
+     next to their trigger once it has measured, which can be a frame or two later on a slow phone. Keep them
+     invisible until they carry that position. Opacity, not visibility, so focusing the first item still works. */
+  [data-popper-positioner]:not([style*="translate"]) {
+    opacity: 0;
+  }
+
   /* Visually hidden, still read by screen readers. */
   .sr-only {
     position: absolute;

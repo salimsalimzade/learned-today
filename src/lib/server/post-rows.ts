@@ -33,6 +33,17 @@ export async function listPosts(filter: Filter, limit?: number): Promise<PostRow
   return unwrap(await q, "listPosts");
 }
 
+/** The columns tagCounts, authorCounts and topicCounts read. */
+export type FacetRow = Pick<PostRow, "tags" | "author_handle" | "author_name" | "author_avatar_url" | "topic_slug" | "topic_name">;
+
+/** Every published post, but only what the counts need: no bodies, which search would otherwise fetch on each keystroke. */
+export async function listFacets(): Promise<FacetRow[]> {
+  const q = createSupabaseServerClient()
+    .from("public_posts")
+    .select("tags, author_handle, author_name, author_avatar_url, topic_slug, topic_name");
+  return unwrap(await q, "listFacets");
+}
+
 export async function getPostRow(id: number): Promise<PostRow | null> {
   const q = createSupabaseServerClient().from("public_posts").select("*").eq("id", id);
   return unwrap(await q.maybeSingle(), "getPostRow");
@@ -115,14 +126,14 @@ export async function toCards(rows: PostRow[], userId: string | null): Promise<P
 export const totalOf = (counts: ReactionCounts) => Object.values(counts).reduce((n, c) => n + (c ?? 0), 0);
 
 /** Counts per tag, most used first. */
-export function tagCounts(rows: PostRow[]): TagCount[] {
+export function tagCounts(rows: FacetRow[]): TagCount[] {
   const m = new Map<string, number>();
   for (const r of rows) for (const t of r.tags ?? []) m.set(t, (m.get(t) ?? 0) + 1);
   return [...m].map(([slug, count]) => ({ slug, count })).sort((a, b) => b.count - a.count || a.slug.localeCompare(b.slug, "az"));
 }
 
 /** Counts per author, most posts first. */
-export function authorCounts(rows: PostRow[]): AuthorCount[] {
+export function authorCounts(rows: FacetRow[]): AuthorCount[] {
   const m = new Map<string, AuthorCount>();
   for (const r of rows) {
     const handle = r.author_handle ?? "";
@@ -134,7 +145,7 @@ export function authorCounts(rows: PostRow[]): AuthorCount[] {
 }
 
 /** Counts per topic, most posts first. */
-export function topicCounts(rows: PostRow[]): TopicCount[] {
+export function topicCounts(rows: FacetRow[]): TopicCount[] {
   const m = new Map<string, TopicCount>();
   for (const r of rows) {
     const slug = r.topic_slug ?? "";

@@ -14,7 +14,6 @@ import {
   PopoverTrigger,
 } from "~/components/ui-kit";
 import { cx } from "~/lib/cx";
-import { isMock } from "~/lib/env";
 import { formatDate } from "~/lib/format";
 import { getMyPosts } from "~/lib/queries/posts";
 import type { Provider, SessionUser } from "~/lib/types";
@@ -27,6 +26,8 @@ const providerName = (p: Provider) => (p === "github" ? "GitHub" : "Google");
 export function AccountMenu(props: { user: SessionUser | null | undefined }) {
   const location = useLocation();
   const [open, setOpen] = createSignal(false);
+  // .latest, not mine(): reading it while it loads would suspend the root <Suspense> and blank the page
+  // behind the menu (see command-palette). The section appears once the posts are in.
   const mine = createAsync(async () => (open() && props.user ? getMyPosts() : null));
   const signIn = useSignIn();
   const signOut = useSignOut();
@@ -79,11 +80,6 @@ export function AccountMenu(props: { user: SessionUser | null | undefined }) {
                   Sign in with GitHub
                 </Button>
               </div>
-              <Show when={isMock}>
-                <p class={styles.text} style={{ "margin-top": "var(--space-3)" }}>
-                  Demo mode: Supabase isn't connected, so you sign in as a sample account.
-                </p>
-              </Show>
             </div>
           }
         >
@@ -106,7 +102,7 @@ export function AccountMenu(props: { user: SessionUser | null | undefined }) {
                 </span>
               </div>
 
-              <Show when={mine()}>
+              <Show when={mine.latest}>
                 {(m) => (
                   <Show
                     when={m().postCount > 0}

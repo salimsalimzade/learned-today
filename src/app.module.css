@@ -8,6 +8,42 @@
   flex: 1;
 }
 
+/* Page loading (RouteProgress in app.tsx). It waits 150ms so quick navigations don't flash it, fades in,
+   then breathes until the page is there. */
+.progress {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: var(--layer-toast);
+  height: 2px;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+.progress[data-active] {
+  animation:
+    progress-in var(--fade-duration) var(--fade-easing) 150ms forwards,
+    progress-breathe 1.2s ease-in-out 270ms infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .progress[data-active] {
+    animation: none;
+    opacity: 1;
+  }
+}
+@keyframes progress-in {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes progress-breathe {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.35;
+  }
+}
+
 /* "Skip to content": hidden until focused with the keyboard. */
 .skip {
   position: absolute;

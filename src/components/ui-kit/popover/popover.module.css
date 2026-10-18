@@ -10,10 +10,11 @@
     border: var(--hairline) solid var(--border-strong);
     border-radius: var(--radius);
     font: var(--text-body-sm);
-    animation: fade-in var(--fade-duration) var(--fade-easing);
   }
-  .popover[data-closed] {
-    animation: fade-out var(--fade-duration) var(--fade-easing);
+  /* The panel is opaque from its first frame and only its contents fade in, so the page never shows
+     through the text while it opens (on a slow phone that read as a glitch). It closes at once. */
+  .popover > * {
+    animation: fade-in var(--fade-duration) var(--fade-easing);
   }
 
   .head {
@@ -40,11 +41,6 @@
 
   @keyframes fade-in {
     from {
-      opacity: 0;
-    }
-  }
-  @keyframes fade-out {
-    to {
       opacity: 0;
     }
   }

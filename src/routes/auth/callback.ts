@@ -1,5 +1,6 @@
 import type { APIEvent } from "@solidjs/start/server";
-import { isMock } from "~/lib/env";
+import { safeNext } from "~/lib/safe-next";
+import { syncTimeZoneOnSignIn } from "~/lib/server/time-zone";
 import { createSupabaseServerClient } from "~/lib/supabase/server";
 
 /**
@@ -9,14 +10,14 @@ import { createSupabaseServerClient } from "~/lib/supabase/server";
  */
 export async function GET(event: APIEvent) {
   const url = new URL(event.request.url);
-  const rawNext = url.searchParams.get("next") ?? "/";
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
+  const next = safeNext(url.searchParams.get("next"));
   const code = url.searchParams.get("code");
 
-  if (isMock || !code) return Response.redirect(new URL(next, url.origin), 303);
+  if (!code) return Response.redirect(new URL(next, url.origin), 303);
 
   const supabase = createSupabaseServerClient();
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  if (!error && data.user) await syncTimeZoneOnSignIn(supabase, data.user.id);
   const to = error ? `/?auth_error=${encodeURIComponent(error.code ?? "exchange_failed")}` : next;
   return new Response(null, { status: 303, headers: { Location: new URL(to, url.origin).href } });
 }

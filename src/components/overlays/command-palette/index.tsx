@@ -5,6 +5,7 @@ import { fold, formatDate } from "~/lib/format";
 import { searchAll } from "~/lib/queries/search";
 import { useTheme } from "~/lib/theme";
 import { useOverlays } from "../overlay-provider";
+import { useShare } from "../use-share";
 import styles from "./command-palette.module.css";
 
 interface Item {
@@ -40,6 +41,7 @@ export function CommandPalette() {
   const theme = useTheme();
   const overlays = useOverlays();
   const navigate = useNavigate();
+  const share = useShare();
   const [query, setQuery] = createSignal("");
   const [debounced, setDebounced] = createSignal("");
   const [active, setActive] = createSignal(0);
@@ -59,6 +61,9 @@ export function CommandPalette() {
     ),
   );
 
+  // Read through .latest, never results(): calling it while a search is in flight suspends, and the nearest
+  // <Suspense> is the root one in app.tsx, so the whole page behind the palette blanked out on every keystroke
+  // until the server answered. .latest keeps the previous results on screen instead.
   const results = createAsync(async () => (overlays.paletteOpen() && debounced() ? searchAll(debounced()) : null));
 
   const close = () => overlays.setPaletteOpen(false);
@@ -69,7 +74,7 @@ export function CommandPalette() {
 
   const items = createMemo<Item[]>(() => {
     const q = debounced();
-    const r = results();
+    const r = results.latest;
     const out: Item[] = [];
     if (q && r) {
       for (const p of r.posts) {
@@ -114,7 +119,7 @@ export function CommandPalette() {
         });
     }
     const commands: Item[] = [
-      { id: "cmd-new", group: "Commands", title: "Write a new note", icon: "plus", kbd: "n", run: go("/share") },
+      { id: "cmd-new", group: "Commands", title: "Write a new note", icon: "plus", kbd: "n", run: () => (close(), share.open()) },
       { id: "cmd-theme", group: "Commands", title: "Switch theme", icon: "moon", kbd: "t", run: () => theme.cycle() },
     ];
     // Commands always show, under the results, as in the design.
@@ -142,7 +147,7 @@ export function CommandPalette() {
   };
 
   const activeId = () => (items()[active()] ? `pl-${items()[active()].id}` : undefined);
-  const showEmpty = () => !!debounced() && results() !== undefined && items().every((i) => i.id.startsWith("cmd-"));
+  const showEmpty = () => !!debounced() && results.latest !== undefined && items().every((i) => i.id.startsWith("cmd-"));
 
   return (
     <D open={overlays.paletteOpen()} onOpenChange={overlays.setPaletteOpen} modal preventScroll>

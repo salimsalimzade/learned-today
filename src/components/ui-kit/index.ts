@@ -10,6 +10,7 @@ export { ICON_NAMES, Icon, type IconName } from "./icon";
 export { Kbd, KbdCombo, KbdHint } from "./kbd";
 export { Link, type LinkVariant, linkClass } from "./link";
 export { Popover, PopoverClose, PopoverContent, PopoverTitle, PopoverTrigger, popoverClass } from "./popover";
+export { type SearchOption, SearchSelect } from "./search-select";
 export { Select, type SelectOption, selectStyles } from "./select";
 export { Tab, TabPanel, Tabs, TabsList } from "./tabs";
 export { TagChip, TagLink, TagList, TagToggle, tagStyles } from "./tag";

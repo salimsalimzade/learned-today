@@ -111,14 +111,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "avatar_url": string | null,"created_at": string,"display_name": string,"handle": string,"id": string,"provider": string
+                    "avatar_url": string | null,"created_at": string,"display_name": string,"handle": string,"id": string,"provider": string,"time_zone": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "avatar_url"?: string | null,"created_at"?: string,"display_name": string,"handle": string,"id": string,"provider"?: string
+                    "avatar_url"?: string | null,"created_at"?: string,"display_name": string,"handle": string,"id": string,"provider"?: string,"time_zone"?: string | null
                   }
                   Update: {
-                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string,"handle"?: string,"id"?: string,"provider"?: string
+                    "avatar_url"?: string | null,"created_at"?: string,"display_name"?: string,"handle"?: string,"id"?: string,"provider"?: string,"time_zone"?: string | null
                   }
                   Relationships: [
                     

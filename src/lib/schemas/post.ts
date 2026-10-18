@@ -2,6 +2,10 @@
 // Error messages are plain English, shown as they are.
 import { z } from "zod";
 
+// No compiled validators: zod probes for them with `new Function`, which the Content-Security-Policy
+// (src/middleware.ts) blocks and the browser reports as a violation. Workers don't allow it either.
+z.config({ jitless: true });
+
 export const TITLE_MAX = 90;
 export const BODY_MAX = 8000;
 export const TAGS_MAX = 5;

@@ -7,7 +7,19 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [solidStart(), nitro({ preset: "cloudflare-module", rolldownConfig: { output: { inlineDynamicImports: true } } })],
+  // src/middleware.ts: rate limits, the CSP nonce and security headers.
+  plugins: [
+    solidStart({ middleware: "./src/middleware.ts" }),
+    nitro({
+      preset: "cloudflare-module",
+      rolldownConfig: { output: { inlineDynamicImports: true } },
+      // `pnpm dev` runs the server in Node. The Cloudflare preset would otherwise run it in Miniflare, and
+      // nitro's runner (env-runner 0.2) passes options that the Miniflare 5 beta wrangler 4.151 ships rejects,
+      // so every request got "503 Runner is unavailable". Builds still target Workers; `wrangler dev` after
+      // `pnpm build` runs the real Worker locally, bindings included.
+      devServer: { runner: "node-worker" },
+    }),
+  ],
   // Port 3000 matches VITE_SITE_URL and the OAuth redirect URLs in supabase/config.toml.
   // allowedHosts lets a tunnel (cloudflared, ngrok) reach the dev server so Telegram can call
   // the webhook while you test. A leading dot allows every subdomain.

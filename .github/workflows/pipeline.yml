@@ -76,9 +76,37 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_TELEGRAM_BOT_USERNAME: ${{ vars.VITE_TELEGRAM_BOT_USERNAME }}
 
+      # The Supabase steps run once the variable SUPABASE_PROJECT_REF and the secrets SUPABASE_ACCESS_TOKEN
+      # and SUPABASE_DB_PASSWORD are set.
+      - name: Setup Supabase CLI
+        if: vars.SUPABASE_PROJECT_REF != ''
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Schema before code, so the Worker deployed next never reads a column that isn't there yet.
+      # `db push` runs only the migrations the project hasn't recorded, and never seed.sql.
+      - name: Apply database migrations
+        if: vars.SUPABASE_PROJECT_REF != ''
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        run: |
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          supabase db push
+
       - name: Deploy
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy
+
+      # After the Worker: the notifier sends buttons whose presses the Worker's webhook handles.
+      - name: Deploy notifier
+        if: vars.SUPABASE_PROJECT_REF != ''
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+        run: supabase functions deploy notifier --project-ref "$SUPABASE_PROJECT_REF"

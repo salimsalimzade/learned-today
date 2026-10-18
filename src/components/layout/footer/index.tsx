@@ -3,6 +3,7 @@ import { REPO_URL } from "~/lib/env";
 import type { ThemePref } from "~/lib/prefs";
 import { useTheme } from "~/lib/theme";
 import { useOverlays } from "../../overlays/overlay-provider";
+import { TimeZonePicker } from "../time-zone-picker";
 import styles from "./footer.module.css";
 
 export function Footer() {
@@ -48,6 +49,7 @@ export function Footer() {
               { value: "dark", label: <Icon name="moon" />, ariaLabel: "Dark" },
             ]}
           />
+          <TimeZonePicker />
         </div>
       </div>
     </footer>

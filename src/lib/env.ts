@@ -5,8 +5,5 @@ export const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABL
 export const TELEGRAM_BOT = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "tildailybot";
 export const REPO_URL = "https://github.com/salimsalimzade/learned-today";
 
-/** True until Supabase keys are set. Queries and actions read mock data instead. */
-export const isMock = !SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY;
-
 /** The time zone used when the visitor's own can't be found. Otherwise day headers ("Today", "Yesterday") use theirs (readTimeZone in prefs.ts). */
 export const DEFAULT_TIME_ZONE = "Asia/Baku";

@@ -1,7 +1,6 @@
 import { createAsync } from "@solidjs/router";
-import { createEffect, Show } from "solid-js";
+import { createEffect } from "solid-js";
 import { Button, Dialog, DialogBody, DialogNote, Kbd } from "~/components/ui-kit";
-import { isMock } from "~/lib/env";
 import { getSession } from "~/lib/queries/session";
 import type { Provider } from "~/lib/types";
 import { useOverlays } from "../overlay-provider";
@@ -40,9 +39,6 @@ export function SignInDialog() {
           Sign in with GitHub
         </Button>
       </DialogBody>
-      <Show when={isMock}>
-        <DialogNote>Demo mode: Supabase isn't connected, so you sign in as a sample account.</DialogNote>
-      </Show>
       <DialogNote class={styles["hover-only"]}>
         <Kbd>esc</Kbd> closes.
       </DialogNote>

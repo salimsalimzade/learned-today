@@ -10,3 +10,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare namespace App {
+  interface RequestEventLocals {
+    /** This request's CSP nonce (src/middleware.ts), for the inline scripts in entry-server.tsx. */
+    nonce?: string;
+  }
+}

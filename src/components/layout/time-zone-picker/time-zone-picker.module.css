@@ -1,0 +1,5 @@
+/* Footer time zone search: as wide as a long zone name with its offset, never wider than the phone. */
+.picker {
+  width: 300px;
+  max-width: 100%;
+}

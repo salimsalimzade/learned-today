@@ -1,10 +1,12 @@
 import { Title } from "@solidjs/meta";
 import { createAsync, useSubmission } from "@solidjs/router";
+import { clientOnly } from "@solidjs/start";
 import { batch, createEffect, createSignal, on, onCleanup, onMount, Show } from "solid-js";
 import { Page } from "~/components/layout/page";
 import { useOverlays } from "~/components/overlays/overlay-provider";
 import { clearDraft, type Draft, readDraft, writeDraft } from "~/components/share/draft";
-import { Editor, type EditorApi } from "~/components/share/editor";
+import type { EditorApi } from "~/components/share/editor";
+import { EditorPlaceholder } from "~/components/share/editor/placeholder";
 import { TagInput } from "~/components/share/tag-input";
 import { type TopicOption, TopicPicker } from "~/components/share/topic-picker";
 import { Button, Checkbox, FieldOptional, fieldStyles, Kbd, KbdCombo, KbdHint, showToast, TextField } from "~/components/ui-kit";
@@ -15,6 +17,11 @@ import { getSession } from "~/lib/queries/session";
 import { type PostErrors, type PostField, SIGN_IN_REQUIRED, TITLE_MAX, validatePost } from "~/lib/schemas/post";
 import { useShortcut } from "~/lib/shortcuts";
 import styles from "~/styles/pages/share.module.css";
+
+// The editor (TipTap, ProseMirror, highlight.js) is most of this page's code, and it only runs in the browser.
+// Loading it on its own lets the page open as soon as the form's code is in, with a same-size placeholder in
+// the editor's place; on a slow connection the title can be typed while the editor is still on its way.
+const Editor = clientOnly(() => import("~/components/share/editor").then((m) => ({ default: m.Editor })));
 
 /** /share: needs sign-in. Guests get the sign-in dialog first and come back here after. */
 export default function SharePage() {
@@ -157,6 +164,16 @@ export default function SharePage() {
             Note
           </span>
           <Editor
+            fallback={
+              <EditorPlaceholder
+                invalid={!!errors().body}
+                status={
+                  <Show when={savedAt()}>
+                    <span>Draft saved</span>
+                  </Show>
+                }
+              />
+            }
             labelId="f-body-l"
             describedBy="f-body-d"
             initial={() => readDraft()?.body ?? ""}

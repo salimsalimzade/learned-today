@@ -11,6 +11,7 @@ import { proseClass } from "../../post/prose";
 import { BLOCKS, currentBlock } from "./blocks";
 import styles from "./editor.module.css";
 import { editorExtensions } from "./extensions";
+import { ContentPlaceholder, EditorFoot } from "./placeholder";
 import type { SlashItem, SlashRender } from "./slash";
 
 export interface EditorApi {
@@ -261,19 +262,11 @@ export function Editor(props: EditorProps) {
       </div>
 
       <Show when={!editor()}>
-        {/* Same box as the real editor until TipTap mounts, so nothing jumps. */}
-        <div class={cx(styles.content, proseClass)} aria-hidden="true">
-          <p class="is-empty" data-placeholder="What did you learn? Type / to add a block." />
-        </div>
+        <ContentPlaceholder />
       </Show>
       <div ref={mount} class={styles.mount} />
 
-      <div class={styles.foot}>
-        <span>
-          <code>```js</code> + Enter: code block in JavaScript · <code>/code</code> any language
-        </span>
-        {props.status}
-      </div>
+      <EditorFoot status={props.status} />
 
       <Show when={slash.open && slash.items.length}>
         <Portal>

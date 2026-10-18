@@ -49,6 +49,11 @@
   display: none;
 }
 
+/* On /share: keeps its place, but can't be seen, focused or read out. */
+.share[data-hidden] {
+  visibility: hidden;
+}
+
 /* Phones: search, account and share become icon buttons; account moves before share. */
 @media (max-width: 639.98px) {
   .wide {
