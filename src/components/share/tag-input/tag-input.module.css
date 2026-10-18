@@ -8,9 +8,6 @@
   overflow: hidden;
   cursor: text;
 }
-.box[data-expanded] {
-  flex-wrap: wrap;
-}
 .box:focus-within {
   outline: var(--focus-width) solid var(--focus);
   outline-offset: var(--focus-offset);
@@ -46,6 +43,17 @@
 .more {
   flex: none;
   color: var(--text);
+  cursor: pointer;
+}
+
+/* The "+N" popover: just the chips that didn't fit, wrapping. */
+.overflow {
+  padding: var(--space-3);
+}
+.overflow-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .draft {

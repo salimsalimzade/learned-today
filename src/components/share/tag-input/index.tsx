@@ -1,6 +1,6 @@
 import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from "solid-js";
-import { FieldCounter, fieldStyles, Icon, TagChip, tagStyles } from "~/components/ui-kit";
-import { cx, flag } from "~/lib/cx";
+import { FieldCounter, fieldStyles, Icon, Popover, PopoverContent, PopoverTrigger, TagChip, tagStyles } from "~/components/ui-kit";
+import { cx } from "~/lib/cx";
 import { normalizeTag, TAG_PATTERN, TAGS_MAX } from "~/lib/schemas/post";
 import styles from "./tag-input.module.css";
 
@@ -15,13 +15,14 @@ interface TagInputProps {
 
 /**
  * Chips in a single-line field. # / Enter / space / comma adds, Backspace on an empty
- * input removes the last chip. Chips that don't fit collapse into "+N"; clicking it
- * lets the field wrap so every chip shows. Each chip posts as a hidden `tags` input.
+ * input removes the last chip. Chips that don't fit collapse into "+N"; clicking it opens
+ * a popover with just those chips, which can be removed there too. The field stays one line.
+ * Each chip posts as a hidden `tags` input.
  */
 export function TagInput(props: TagInputProps) {
   const [draft, setDraft] = createSignal("");
   const [hidden, setHidden] = createSignal(0);
-  const [expanded, setExpanded] = createSignal(false);
+  const [moreOpen, setMoreOpen] = createSignal(false);
   const [invalid, setInvalid] = createSignal(false);
   let box: HTMLDivElement | undefined;
   let input: HTMLInputElement | undefined;
@@ -55,8 +56,9 @@ export function TagInput(props: TagInputProps) {
 
   // How many chips fit on one line next to a 72px input and the +N chip?
   const measure = () => {
-    if (!box || expanded()) return setHidden(0);
+    if (!box) return;
     const chips = [...box.querySelectorAll<HTMLElement>("[data-chip]")];
+    // Unhide every chip before measuring: widths of hidden ones read as 0.
     for (const c of chips) c.hidden = false;
     const room = box.clientWidth - 16 - 72 - 44;
     let used = 0;
@@ -79,9 +81,27 @@ export function TagInput(props: TagInputProps) {
     if (box) ro.observe(box);
     onCleanup(() => ro.disconnect());
   });
-  createEffect(on([() => props.value.length, expanded], () => queueMicrotask(measure)));
+  createEffect(
+    on(
+      () => props.value.length,
+      () => queueMicrotask(measure),
+    ),
+  );
 
   const hiddenTags = () => props.value.slice(props.value.length - hidden());
+
+  // The popover closes once it has nothing left to show (its last chip removed, or the field got wider).
+  createEffect(() => hidden() === 0 && setMoreOpen(false));
+
+  /** A chip removed from the popover. Focus stays in the popover on the next hidden chip, or goes back to the input. */
+  const removeHidden = (tag: string) => {
+    props.onChange(props.value.filter((x) => x !== tag));
+    measure();
+    if (hidden() === 0) {
+      setMoreOpen(false);
+      input?.focus();
+    } else document.querySelector<HTMLElement>(`[data-overflow="${props.id}"] button`)?.focus();
+  };
 
   return (
     <>
@@ -89,10 +109,8 @@ export function TagInput(props: TagInputProps) {
       <div
         ref={box}
         class={styles.box}
-        data-expanded={flag(expanded())}
         aria-invalid={props.error || invalid() ? "true" : undefined}
         onClick={(e) => e.target === box && input?.focus()}
-        onFocusOut={(e) => !box?.contains(e.relatedTarget as Node | null) && setExpanded(false)}
       >
         <For each={props.value}>
           {(tag) => (
@@ -111,14 +129,28 @@ export function TagInput(props: TagInputProps) {
           )}
         </For>
         <Show when={hidden() > 0}>
-          <button
-            type="button"
-            class={cx(tagStyles.tag, styles.more)}
-            aria-label={`${hidden()} more tags: ${hiddenTags().join(", ")}`}
-            onClick={() => setExpanded(true)}
-          >
-            +{hidden()}
-          </button>
+          <Popover open={moreOpen()} onOpenChange={setMoreOpen} placement="bottom-start">
+            <PopoverTrigger as="button" type="button" class={cx(tagStyles.tag, styles.more)} aria-label={`Show ${hidden()} more tags`}>
+              +{hidden()}
+            </PopoverTrigger>
+            <PopoverContent aria-label="More tags" class={styles.overflow}>
+              <div class={styles["overflow-list"]} data-overflow={props.id}>
+                <For each={hiddenTags()}>
+                  {(tag) => (
+                    <TagChip
+                      end={
+                        <button type="button" class={styles.remove} aria-label={`Remove tag: ${tag}`} onClick={() => removeHidden(tag)}>
+                          <Icon name="x" />
+                        </button>
+                      }
+                    >
+                      {tag}
+                    </TagChip>
+                  )}
+                </For>
+              </div>
+            </PopoverContent>
+          </Popover>
         </Show>
         <input
           ref={input}
