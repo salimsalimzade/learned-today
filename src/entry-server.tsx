@@ -13,7 +13,10 @@ export default createHandler(() => (
             <meta charset="utf-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1" />
             <meta name="color-scheme" content="light dark" />
-            <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+            {/* .ico first for old browsers; the SVG (listed last) wins in browsers that support it and follows dark mode. */}
+            <link rel="icon" href="/favicon.ico" sizes="48x48" />
+            <link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any" />
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
             <link rel="alternate" type="application/rss+xml" title="what-did-i-learn-today" href="/rss.xml" />
             <script innerHTML={themeBootScript} />
             <script innerHTML={timeZoneBootScript(readTimeZone())} />

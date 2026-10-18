@@ -7,7 +7,7 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [solidStart(), nitro({ preset: "cloudflare-module" })],
+  plugins: [solidStart(), nitro({ preset: "cloudflare-module", rolldownConfig: { output: { inlineDynamicImports: true } } })],
   // Port 3000 matches VITE_SITE_URL and the OAuth redirect URLs in supabase/config.toml.
   // allowedHosts lets a tunnel (cloudflared, ngrok) reach the dev server so Telegram can call
   // the webhook while you test. A leading dot allows every subdomain.
