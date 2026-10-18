@@ -8,13 +8,13 @@ export default function ButtonPreview() {
         {() => (
           <>
             <Cell label="secondary (default)">
-              <Button>Ləğv et</Button>
+              <Button>Cancel</Button>
             </Cell>
             <Cell label="primary">
-              <Button variant="primary">Paylaş</Button>
+              <Button variant="primary">Share</Button>
             </Cell>
             <Cell label="ghost">
-              <Button variant="ghost">Qaralamanı sil</Button>
+              <Button variant="ghost">Delete draft</Button>
             </Cell>
           </>
         )}
@@ -25,7 +25,7 @@ export default function ButtonPreview() {
             <Cell label="leading icon">
               <Button>
                 <Icon name="plus" />
-                Yeni qeyd
+                New note
               </Button>
             </Cell>
             <Cell label="with Kbd hint">
@@ -37,12 +37,12 @@ export default function ButtonPreview() {
               </Button>
             </Cell>
             <Cell label="icon-only">
-              <Button icon aria-label="Bağla">
+              <Button icon aria-label="Close">
                 <Icon name="x" />
               </Button>
             </Cell>
             <Cell label="icon-only ghost">
-              <Button icon variant="ghost" aria-label="Axtar">
+              <Button icon variant="ghost" aria-label="Search">
                 <Icon name="search" />
               </Button>
             </Cell>
@@ -53,26 +53,26 @@ export default function ButtonPreview() {
         {() => (
           <>
             <Cell label="disabled">
-              <Button disabled>Ləğv et</Button>
+              <Button disabled>Cancel</Button>
             </Cell>
             <Cell label="primary disabled">
               <Button variant="primary" disabled>
-                Paylaş
+                Share
               </Button>
             </Cell>
             <Cell label="busy">
               <Button variant="primary" aria-busy="true" disabled>
-                Paylaşılır…
+                Sharing…
               </Button>
             </Cell>
             <Cell label="ButtonLink (an <a>)">
-              <ButtonLink href="/preview">Bütün komponentlər</ButtonLink>
+              <ButtonLink href="/preview">All components</ButtonLink>
             </Cell>
           </>
         )}
       </Specimen>
       <Specimen title="Block" stack>
-        {() => <Button block>GitHub ilə daxil ol</Button>}
+        {() => <Button block>Sign in with GitHub</Button>}
       </Specimen>
     </PreviewPage>
   );

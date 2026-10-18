@@ -23,18 +23,18 @@ export default function CheckboxPreview() {
       <Specimen title="States" stack>
         {() => (
           <>
-            <Box label="Bunu özüm öyrəndim" />
-            <Box label="Bunu özüm öyrəndim" initial />
-            <Box label="Telegram bildirişləri" description="Hər səhər bir mesaj." initial />
+            <Box label="I learned this myself" />
+            <Box label="I learned this myself" initial />
+            <Box label="Telegram notifications" description="One message every morning." initial />
           </>
         )}
       </Specimen>
       <Specimen title="Error and disabled" stack>
         {() => (
           <>
-            <Box label="Bunu özüm öyrəndim" error="Paylaşmadan əvvəl təsdiq et." />
-            <Box label="Söndürülüb" disabled />
-            <Box label="Söndürülüb, seçili" disabled initial />
+            <Box label="I learned this myself" error="Confirm before sharing." />
+            <Box label="Disabled" disabled />
+            <Box label="Disabled, selected" disabled initial />
           </>
         )}
       </Specimen>

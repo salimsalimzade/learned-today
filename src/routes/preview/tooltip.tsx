@@ -15,15 +15,15 @@ export default function TooltipPreview() {
               </Tooltip>
             </Cell>
             <Cell label="with Kbd">
-              <Tooltip content="Axtar" kbd="/">
-                <TooltipTrigger as={Button} icon aria-label="Axtar">
+              <Tooltip content="Search" kbd="/">
+                <TooltipTrigger as={Button} icon aria-label="Search">
                   <Icon name="search" />
                 </TooltipTrigger>
               </Tooltip>
             </Cell>
             <Cell label="bottom">
-              <Tooltip content="Aşağıda açılır" placement="bottom">
-                <TooltipTrigger as={Button}>Aşağı</TooltipTrigger>
+              <Tooltip content="Opens below" placement="bottom">
+                <TooltipTrigger as={Button}>Below</TooltipTrigger>
               </Tooltip>
             </Cell>
           </>

@@ -28,7 +28,16 @@
       background-color var(--fade-duration) var(--fade-easing),
       border-color var(--fade-duration) var(--fade-easing);
   }
-  .control > [data-icon] {
+  /* The indicator is the grid cell's only child: fill it and centre the icon, so the
+     icon's line box doesn't push the mark below the middle of the square. */
+  .indicator {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+  }
+  .indicator > [data-icon] {
+    display: block;
     width: 14px;
     height: 14px;
   }

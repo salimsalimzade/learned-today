@@ -7,11 +7,13 @@ export default function CollapsiblePreview() {
       <Specimen title="Closed and open" stack>
         {() => (
           <>
-            <Collapsible title="Niyə belə işləyir?">
-              <p style={{ margin: 0, font: "var(--text-body-sm)" }}>Duz dənələrin səthindəki nişastanı yuyur, ona görə yapışmırlar.</p>
+            <Collapsible title="Why does it work like this?">
+              <p style={{ margin: 0, font: "var(--text-body-sm)" }}>
+                Salt washes the starch off the surface of the grains, so they don't stick.
+              </p>
             </Collapsible>
-            <Collapsible title="Mənbələr" defaultOpen>
-              <p style={{ margin: 0, font: "var(--text-body-sm)" }}>Nənəmin resepti və bir neçə yemək bloqu.</p>
+            <Collapsible title="Sources" defaultOpen>
+              <p style={{ margin: 0, font: "var(--text-body-sm)" }}>My grandmother's recipe and a few food blogs.</p>
             </Collapsible>
           </>
         )}

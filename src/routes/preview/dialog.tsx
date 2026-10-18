@@ -6,12 +6,12 @@ function Confirm() {
   const [open, setOpen] = createSignal(false);
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Təsdiq dialoqu</Button>
-      <Dialog open={open()} onOpenChange={setOpen} title="Qaralama silinsin?" description="Yazdıqların itəcək. Bunu geri qaytarmaq olmur.">
+      <Button onClick={() => setOpen(true)}>Confirm dialog</Button>
+      <Dialog open={open()} onOpenChange={setOpen} title="Delete draft?" description="What you wrote will be lost. This can't be undone.">
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Ləğv et</Button>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
           <Button variant="primary" onClick={() => setOpen(false)}>
-            Sil
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
@@ -23,15 +23,15 @@ function WithBody() {
   const [open, setOpen] = createSignal(false);
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Body və qeyd</Button>
+      <Button onClick={() => setOpen(true)}>Body and note</Button>
       <Dialog open={open()} onOpenChange={setOpen} title="Daxil ol">
         <DialogBody>
           <div style={{ display: "flex", "flex-direction": "column", gap: "8px" }}>
-            <Button block>GitHub ilə</Button>
-            <Button block>Google ilə</Button>
+            <Button block>With GitHub</Button>
+            <Button block>With Google</Button>
           </div>
         </DialogBody>
-        <DialogNote>Davam etməklə qaydalarla razılaşırsan.</DialogNote>
+        <DialogNote>By continuing you agree to the rules.</DialogNote>
       </Dialog>
     </>
   );

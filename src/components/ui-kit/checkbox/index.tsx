@@ -27,7 +27,7 @@ export function Checkbox(props: CheckboxProps) {
     >
       <KCheckbox.Input class="sr-only" />
       <KCheckbox.Control class={styles.control}>
-        <KCheckbox.Indicator>
+        <KCheckbox.Indicator class={styles.indicator}>
           <Icon name="check" />
         </KCheckbox.Indicator>
       </KCheckbox.Control>

@@ -54,8 +54,8 @@ export default function TokensPreview() {
         {() => (
           <>
             <div class={styles.font} style={{ "font-family": "var(--font-sans)" }}>
-              <span class={styles["type-meta"]}>Inter · 100–900 · roman + italic · Latin, Azərbaycan</span>
-              <p class={styles["font-sample"]}>Bu gün nə öyrəndin? Əə Ğğ Iı İi Şş Çç Öö Üü</p>
+              <span class={styles["type-meta"]}>Inter · 100–900 · roman + italic · Latin</span>
+              <p class={styles["font-sample"]}>What did you learn today? Aa Gg Ii Ss Cc Oo Uu</p>
               <div class={styles["font-weights"]}>
                 <For each={[400, 500, 600, 650, 700]}>{(w) => <span style={{ "font-weight": w }}>{w} Aa</span>}</For>
                 <span style={{ "font-style": "italic" }}>italic Aa</span>

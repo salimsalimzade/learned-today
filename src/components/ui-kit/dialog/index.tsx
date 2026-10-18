@@ -1,7 +1,6 @@
 import { Dialog as KDialog } from "@kobalte/core/dialog";
 import { type JSX, type ParentProps, Show } from "solid-js";
 import { cx } from "~/lib/cx";
-import { useI18n } from "~/lib/i18n";
 import buttonStyles from "../button/button.module.css";
 import { Icon } from "../icon";
 import styles from "./dialog.module.css";
@@ -16,7 +15,6 @@ interface DialogProps extends ParentProps {
 
 /** Kobalte Dialog: title, close button, optional description, then your content. */
 export function Dialog(props: DialogProps) {
-  const { t } = useI18n();
   return (
     <KDialog open={props.open} onOpenChange={props.onOpenChange} modal preventScroll>
       <KDialog.Portal>
@@ -25,12 +23,7 @@ export function Dialog(props: DialogProps) {
           <KDialog.Content class={cx(styles.dialog, props.class)}>
             <div class={styles.head}>
               <KDialog.Title class={styles.title}>{props.title}</KDialog.Title>
-              <KDialog.CloseButton
-                class={cx(buttonStyles.button, styles.close)}
-                data-variant="ghost"
-                data-icon-only=""
-                aria-label={t("common.close")}
-              >
+              <KDialog.CloseButton class={cx(buttonStyles.button, styles.close)} data-variant="ghost" data-icon-only="" aria-label="Close">
                 <Icon name="x" size={20} />
               </KDialog.CloseButton>
             </div>

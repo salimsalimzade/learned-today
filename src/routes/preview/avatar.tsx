@@ -8,13 +8,13 @@ export default function AvatarPreview() {
         {() => (
           <>
             <Cell label="sm">
-              <Avatar name="Aysel Məmmədova" size="sm" />
+              <Avatar name="Emily Carter" size="sm" />
             </Cell>
             <Cell label="md (default)">
-              <Avatar name="Aysel Məmmədova" />
+              <Avatar name="Emily Carter" />
             </Cell>
             <Cell label="lg">
-              <Avatar name="Aysel Məmmədova" size="lg" />
+              <Avatar name="Emily Carter" size="lg" />
             </Cell>
           </>
         )}
@@ -26,7 +26,7 @@ export default function AvatarPreview() {
               <Avatar name="Learned today" src="/favicon.svg" size="lg" />
             </Cell>
             <Cell label="broken image → initials">
-              <Avatar name="Rauf Əliyev" src="/missing.png" size="lg" />
+              <Avatar name="Ryan Allen" src="/missing.png" size="lg" />
             </Cell>
             <Cell label="one word">
               <Avatar name="salim" size="lg" />

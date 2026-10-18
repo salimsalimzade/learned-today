@@ -1,7 +1,6 @@
 import { Popover as KPopover, type PopoverRootProps } from "@kobalte/core/popover";
 import { type JSX, type ParentProps, Show, splitProps } from "solid-js";
 import { cx } from "~/lib/cx";
-import { useI18n } from "~/lib/i18n";
 import buttonStyles from "../button/button.module.css";
 import { Icon } from "../icon";
 import styles from "./popover.module.css";
@@ -29,7 +28,6 @@ const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabi
 
 /** Portalled panel: hairline edge, no shadow, fades in and out. */
 export function PopoverContent(props: ContentProps) {
-  const { t } = useI18n();
   const [local, rest] = splitProps(props, ["title", "description", "closeButton", "class", "children"]);
   let content: HTMLDivElement | undefined;
   return (
@@ -59,7 +57,7 @@ export function PopoverContent(props: ContentProps) {
                   class={cx(buttonStyles.button, styles.close)}
                   data-variant="ghost"
                   data-icon-only=""
-                  aria-label={t("common.close")}
+                  aria-label="Close"
                 >
                   <Icon name="x" />
                 </KPopover.CloseButton>

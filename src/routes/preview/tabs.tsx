@@ -7,28 +7,28 @@ function Example(props: { counts?: boolean }) {
   const [tab, setTab] = createSignal("posts");
   return (
     <Tabs value={tab()} onChange={setTab}>
-      <TabsList aria-label="Bölmələr">
+      <TabsList aria-label="Sections">
         <Tab value="posts" count={props.counts ? 24 : undefined}>
-          Qeydlər
+          Notes
         </Tab>
         <Tab value="tags" count={props.counts ? 9 : undefined}>
-          Teqlər
+          Tags
         </Tab>
         <Tab value="authors" count={props.counts ? 5 : undefined}>
-          Müəlliflər
+          Authors
         </Tab>
         <Tab value="off" disabled>
-          Söndürülüb
+          Disabled
         </Tab>
       </TabsList>
       <TabPanel value="posts">
-        <p class={styles.box}>Qeydlər paneli</p>
+        <p class={styles.box}>Notes panel</p>
       </TabPanel>
       <TabPanel value="tags">
-        <p class={styles.box}>Teqlər paneli</p>
+        <p class={styles.box}>Tags panel</p>
       </TabPanel>
       <TabPanel value="authors">
-        <p class={styles.box}>Müəlliflər paneli</p>
+        <p class={styles.box}>Authors panel</p>
       </TabPanel>
     </Tabs>
   );

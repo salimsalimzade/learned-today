@@ -5,21 +5,21 @@ import { Select } from "~/components/ui-kit";
 const TOPICS = [
   { value: "frontend", label: "Frontend" },
   { value: "backend", label: "Backend" },
-  { value: "cooking", label: "Mətbəx" },
-  { value: "language", label: "Dil" },
-  { value: "history", label: "Tarix", disabled: true },
+  { value: "cooking", label: "Kitchen" },
+  { value: "language", label: "Language" },
+  { value: "history", label: "History", disabled: true },
 ];
 
 function Pick(props: { initial?: string; error?: string; disabled?: boolean; description?: string }) {
   const [v, setV] = createSignal<string | null>(props.initial ?? null);
   return (
     <Select
-      label="Mövzu"
+      label="Topic"
       name="topic"
       options={TOPICS}
       value={v()}
       onChange={setV}
-      placeholder="Mövzu seç"
+      placeholder="Pick a topic"
       error={props.error}
       disabled={props.disabled}
       description={props.description}
@@ -33,7 +33,7 @@ export default function SelectPreview() {
       <Specimen title="Empty and chosen" stack>
         {() => (
           <>
-            <Pick description="Bir mövzu seç." />
+            <Pick description="Pick a topic." />
             <Pick initial="cooking" />
           </>
         )}
@@ -41,7 +41,7 @@ export default function SelectPreview() {
       <Specimen title="Error and disabled" stack>
         {() => (
           <>
-            <Pick error="Mövzu seç." />
+            <Pick error="Pick a topic." />
             <Pick initial="frontend" disabled />
           </>
         )}

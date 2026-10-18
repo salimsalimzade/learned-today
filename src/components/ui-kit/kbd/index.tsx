@@ -10,7 +10,7 @@ export function Kbd(props: ParentProps) {
   );
 }
 
-/** Keys with their muted label, e.g. "↑ ↓ seç". */
+/** Keys with their muted label, e.g. "↑ ↓ select". */
 export function KbdCombo(props: ParentProps) {
   return <span class={styles.combo}>{props.children}</span>;
 }

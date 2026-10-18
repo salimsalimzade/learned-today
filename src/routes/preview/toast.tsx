@@ -8,34 +8,34 @@ export default function ToastPreview() {
         {() => (
           <>
             <Cell label="default">
-              <Button onClick={() => showToast({ title: "Qeyd paylaşıldı" })}>Göstər</Button>
+              <Button onClick={() => showToast({ title: "Note shared" })}>Show</Button>
             </Cell>
             <Cell label="with description">
-              <Button onClick={() => showToast({ title: "Link kopyalandı", description: "İndi istədiyin yerə yapışdır." })}>Göstər</Button>
+              <Button onClick={() => showToast({ title: "Link copied", description: "Now paste it anywhere." })}>Show</Button>
             </Cell>
             <Cell label="with action">
               <Button
                 onClick={() =>
                   showToast({
                     title: "Qaralama silindi",
-                    action: { label: "Geri qaytar", onClick: () => showToast({ title: "Qaytarıldı" }) },
+                    action: { label: "Undo", onClick: () => showToast({ title: "Undone" }) },
                   })
                 }
               >
-                Göstər
+                Show
               </Button>
             </Cell>
             <Cell label="error">
               <Button
                 onClick={() =>
-                  showToast({ title: "Paylaşmaq olmadı", description: "İnterneti yoxla və yenidən cəhd et.", variant: "error" })
+                  showToast({ title: "Couldn't share", description: "Check your connection and try again.", variant: "error" })
                 }
               >
-                Göstər
+                Show
               </Button>
             </Cell>
             <Cell label="warning">
-              <Button onClick={() => showToast({ title: "Qaralama köhnədir", variant: "warning" })}>Göstər</Button>
+              <Button onClick={() => showToast({ title: "The draft is old", variant: "warning" })}>Show</Button>
             </Cell>
           </>
         )}

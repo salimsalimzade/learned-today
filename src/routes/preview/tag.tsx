@@ -5,7 +5,7 @@ import { Icon, TagChip, TagLink, TagList, TagToggle } from "~/components/ui-kit"
 function Filter() {
   const [on, setOn] = createSignal<string | null>("css");
   return (
-    <TagList aria-label="Teqə görə süz">
+    <TagList aria-label="Filter by tag">
       <For each={["css", "typescript", "solid"]}>
         {(tag) => (
           <li>
@@ -64,7 +64,7 @@ export default function TagPreview() {
                 end={
                   <button
                     type="button"
-                    aria-label="Sil"
+                    aria-label="Remove"
                     style={{ display: "grid", padding: 0, border: 0, background: "none", color: "var(--text-muted)", cursor: "pointer" }}
                   >
                     <Icon name="x" style={{ width: "12px", height: "12px" }} />
@@ -79,7 +79,7 @@ export default function TagPreview() {
       </Specimen>
       <Specimen title="TagList" stack>
         {() => (
-          <TagList aria-label="Teqlər">
+          <TagList aria-label="Tags">
             <For each={["typescript", "css", "solid", "kobalte", "vite", "supabase", "postgres", "rss"]}>
               {(t) => (
                 <li>

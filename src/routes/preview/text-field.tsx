@@ -38,16 +38,21 @@ export default function TextFieldPreview() {
       <Specimen title="Default and help" stack>
         {() => (
           <>
-            <Field label="Başlıq" placeholder="Bir cümlə ilə" />
-            <Field label="Başlıq" initial="satisfies tipi daraltmır" description="Bir cümlə. Nəyi öyrəndin?" counterMax={90} />
+            <Field label="Title" placeholder="In one sentence" />
+            <Field
+              label="Title"
+              initial="satisfies doesn't widen the type"
+              description="One sentence. What did you learn?"
+              counterMax={90}
+            />
           </>
         )}
       </Specimen>
       <Specimen title="Error, disabled, mono" stack>
         {() => (
           <>
-            <Field label="Başlıq" error="Başlıq lazımdır." />
-            <Field label="Başlıq" initial={"Çox uzun başlıq ".repeat(7)} counterMax={90} error="90 simvoldan çox olmasın." />
+            <Field label="Title" error="A title is required." />
+            <Field label="Title" initial={"A very long title ".repeat(7)} counterMax={90} error="Keep it under 90 characters." />
             <Field label="Link" initial="https://example.com" disabled />
             <Cell label="mono" wide>
               <Field label="Telegram ID" initial="@learned_today" mono />

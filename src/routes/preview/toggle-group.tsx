@@ -10,24 +10,24 @@ function Theme() {
       value={v()}
       onChange={setV}
       items={[
-        { value: "light", label: <Icon name="sun" />, ariaLabel: "Açıq" },
+        { value: "light", label: <Icon name="sun" />, ariaLabel: "Light" },
         { value: "system", label: "Sistem" },
-        { value: "dark", label: <Icon name="moon" />, ariaLabel: "Tünd" },
+        { value: "dark", label: <Icon name="moon" />, ariaLabel: "Dark" },
       ]}
     />
   );
 }
 
-function Lang() {
-  const [v, setV] = createSignal<"az" | "en">("az");
+function View() {
+  const [v, setV] = createSignal<"list" | "grid">("list");
   return (
     <ToggleGroup
-      label="Dil"
+      label="View"
       value={v()}
       onChange={setV}
       items={[
-        { value: "az", label: "AZ", lang: "az" },
-        { value: "en", label: "EN", lang: "en" },
+        { value: "list", label: "List" },
+        { value: "grid", label: "Grid" },
       ]}
     />
   );
@@ -37,12 +37,12 @@ function WithDisabled() {
   const [v, setV] = createSignal<"day" | "week" | "month">("day");
   return (
     <ToggleGroup
-      label="Dövr"
+      label="Period"
       value={v()}
       onChange={setV}
       items={[
-        { value: "day", label: "Gün" },
-        { value: "week", label: "Həftə" },
+        { value: "day", label: "Day" },
+        { value: "week", label: "Week" },
         { value: "month", label: "Ay", disabled: true },
       ]}
     />
@@ -59,7 +59,7 @@ export default function ToggleGroupPreview() {
               <Theme />
             </Cell>
             <Cell label="text">
-              <Lang />
+              <View />
             </Cell>
             <Cell label="disabled item">
               <WithDisabled />

@@ -14,7 +14,7 @@ export function FieldCounter(props: { value: number; max: number }) {
   );
 }
 
-/** "(istəyə bağlı)" after a label. */
+/** "(optional)" after a label. */
 export function FieldOptional(props: ParentProps) {
   return <span class={styles.optional}>{props.children}</span>;
 }

@@ -14,7 +14,7 @@ function Area(props: { label: string; initial?: string; description?: string; er
       error={props.error}
       counterMax={props.counterMax}
       disabled={props.disabled}
-      placeholder="Bir neçə cümlə…"
+      placeholder="A few sentences…"
     />
   );
 }
@@ -28,11 +28,11 @@ export default function TextAreaPreview() {
       <Specimen title="Default and help" stack>
         {() => (
           <>
-            <Area label="Qısa izah" />
+            <Area label="Short explanation" />
             <Area
-              label="Qısa izah"
-              initial="Düyünü duzlu suda isladanda dənələr bir-birinə yapışmır."
-              description="Lentdə görünür."
+              label="Short explanation"
+              initial="When rice soaks in salted water the grains don't stick together."
+              description="Shown in the feed."
               counterMax={200}
             />
           </>
@@ -41,8 +41,8 @@ export default function TextAreaPreview() {
       <Specimen title="Error and disabled" stack>
         {() => (
           <>
-            <Area label="Qısa izah" error="Bu sahə lazımdır." />
-            <Area label="Qısa izah" initial="Redaktə etmək olmur." disabled />
+            <Area label="Short explanation" error="This field is required." />
+            <Area label="Short explanation" initial="Can't be edited." disabled />
           </>
         )}
       </Specimen>

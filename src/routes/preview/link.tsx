@@ -8,17 +8,17 @@ export default function LinkPreview() {
         {() => (
           <>
             <Cell label="default (prose)">
-              <Link href="/preview">MDN-də oxu</Link>
+              <Link href="/preview">Read on MDN</Link>
             </Cell>
             <Cell label="quiet">
               <Link variant="quiet" href="/preview">
-                Aysel Məmmədova
+                Emily Carter
               </Link>
             </Cell>
             <Cell label="muted">
               <Link variant="muted" href="/preview">
                 <Icon name="arrow-left" />
-                Lentə qayıt
+                Back to the feed
               </Link>
             </Cell>
             <Cell label="external">
@@ -32,7 +32,8 @@ export default function LinkPreview() {
       <Specimen title="Inside text" stack>
         {() => (
           <p style={{ margin: 0, font: "var(--text-body)" }}>
-            Ətraflı izahat <Link href="/preview">bu məqalədədir</Link>, amma qısası budur: <code>satisfies</code> tipi daraltmır.
+            The long explanation is <Link href="/preview">in this article</Link>, but the short version is: <code>satisfies</code> doesn't
+            widen the type.
           </p>
         )}
       </Specimen>

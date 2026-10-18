@@ -35,14 +35,14 @@ export default function KbdPreview() {
             <Cell label="KbdCombo">
               <KbdCombo>
                 <Kbd>↑</Kbd>
-                <Kbd>↓</Kbd> seç
+                <Kbd>↓</Kbd> select
               </KbdCombo>
             </Cell>
             <Cell label="KbdHint (hidden on touch)">
               <KbdCombo>
                 <KbdHint>
                   <Kbd>r</Kbd>
-                  <Kbd>1</Kbd>–<Kbd>6</Kbd> reaksiya seç
+                  <Kbd>1</Kbd>–<Kbd>6</Kbd> pick a reaction
                 </KbdHint>
               </KbdCombo>
             </Cell>

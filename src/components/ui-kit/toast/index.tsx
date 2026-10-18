@@ -1,7 +1,6 @@
 import { Toast as KToast, toaster } from "@kobalte/core/toast";
 import { onMount, Show } from "solid-js";
 import { Portal } from "solid-js/web";
-import { useI18n } from "~/lib/i18n";
 import buttonStyles from "../button/button.module.css";
 import { Icon } from "../icon";
 import styles from "./toast.module.css";
@@ -15,7 +14,7 @@ export interface ToastOptions {
   duration?: number;
 }
 
-let closeLabel = "Bağla";
+let closeLabel = "Close";
 
 /** Show a toast from anywhere on the client. Errors are announced assertively. */
 export function showToast(o: ToastOptions) {
@@ -63,8 +62,7 @@ export function showToast(o: ToastOptions) {
 
 /** Mount once, in app.tsx. Bottom centre on phones, bottom right from 600px. */
 export function ToastRegion() {
-  const { t } = useI18n();
-  onMount(() => (closeLabel = t("common.close")));
+  onMount(() => (closeLabel = "Close"));
   return (
     <Portal>
       <KToast.Region class={styles.region} swipeDirection="right">
