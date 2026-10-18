@@ -52,54 +52,35 @@
   padding: 10px var(--space-5);
 }
 
-.excerpt {
-  margin: 0;
+/* The note itself. A long one is clamped near --card-body-max (CARD_BODY_MAX, set on the card from
+   lib/card-preview) and fades out where it's cut. The server picks blocks by estimated height; two lines of
+   slack keep a block it judged to fit (a narrow phone wraps more) from being shaved at the bottom. */
+.body {
   padding: var(--space-4) var(--space-6) 0;
-  color: var(--text-muted);
-  font: var(--text-body-sm);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
+}
+.body[data-clamped] {
+  max-height: calc(var(--card-body-max) + 48px);
   overflow: hidden;
 }
-
-/* A note that opens with code shows its first lines, set like the post page's code blocks (code-block.module.css). */
-.snippet {
-  margin: var(--space-4) var(--space-6) 0;
-  border: var(--hairline) solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-subtle);
-  overflow: hidden;
+.body[data-clipped] {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 64px), transparent);
 }
 
-.lang {
-  padding: var(--space-2) var(--space-4);
-  border-bottom: var(--hairline) solid var(--border);
-  color: var(--text-muted);
-  font: 400 12px / 16px var(--font-mono);
+/* "Read more →" under a clamped body. */
+.more {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--target-min);
+  margin: var(--space-1) var(--space-6) 0;
+  border-radius: var(--radius-sm);
+  color: var(--link);
+  font: var(--text-ui);
+  text-decoration: none;
 }
-
-.pre {
-  position: relative;
-  margin: 0;
-  padding: var(--space-3) var(--space-4);
-  overflow: hidden;
-  color: var(--text);
-  font: var(--text-code);
-  font-variant-ligatures: none;
-  tab-size: 2;
-}
-.pre code {
-  font: inherit;
-}
-/* More code follows on the post page: fade the last line out. */
-.pre[data-truncated]::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0;
-  height: 48px;
-  background: linear-gradient(transparent, var(--bg-subtle));
-  pointer-events: none;
+.more:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .foot {
@@ -149,11 +130,11 @@
   .tags {
     padding: 10px var(--space-3);
   }
-  .excerpt {
+  .body {
     padding: var(--space-4) var(--space-4) 0;
   }
-  .snippet {
-    margin: var(--space-4) var(--space-4) 0;
+  .more {
+    margin: var(--space-1) var(--space-4) 0;
   }
   .foot {
     padding: var(--space-3) var(--space-4) var(--space-4);

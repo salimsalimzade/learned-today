@@ -1,5 +1,6 @@
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal, createUniqueId, onCleanup, Show } from "solid-js";
 import { Button, Icon, Tooltip, TooltipTrigger } from "~/components/ui-kit";
+import { CARD_CODE_LINES } from "~/lib/card-preview";
 import { flag } from "~/lib/cx";
 import styles from "./code-block.module.css";
 
@@ -31,17 +32,50 @@ export function CopyButton(props: { code: () => string }) {
   );
 }
 
-/** A highlighted code block with its language label. `html` is pre-escaped by lib/markdown. */
-export function CodeBlock(props: { label: string; html: string; code: string }) {
+/**
+ * A highlighted code block with its language label. `html` is pre-escaped by lib/markdown. In a feed card
+ * (`collapsible`) it also shows its line count and, past CARD_CODE_LINES, opens with "Show all N lines";
+ * `onExpand` tells the card, which then stops clamping its body.
+ */
+export function CodeBlock(props: { label: string; html: string; code: string; collapsible?: boolean; onExpand?: () => void }) {
+  const [open, setOpen] = createSignal(false);
+  const preId = createUniqueId();
+  const lines = () => props.code.split("\n").length;
+  const long = () => !!props.collapsible && lines() > CARD_CODE_LINES;
+  const toggle = () => {
+    setOpen(!open());
+    if (open()) props.onExpand?.();
+  };
+  // Ctrl/Cmd+A in a focused code block selects its code, not the whole page.
+  const selectCode = (e: KeyboardEvent & { currentTarget: HTMLPreElement }) => {
+    if (e.key.toLowerCase() !== "a" || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+    e.preventDefault();
+    const range = document.createRange();
+    range.selectNodeContents(e.currentTarget);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+  };
+
   return (
     <figure class={styles.code}>
       <div class={styles.head}>
-        <span class={styles.lang}>{props.label}</span>
+        <span class={styles.lang}>
+          {props.label}
+          <Show when={props.collapsible}>
+            <span class={styles.lines}>{lines() === 1 ? "1 line" : `${lines()} lines`}</span>
+          </Show>
+        </span>
         <CopyButton code={() => props.code} />
       </div>
-      <pre class={styles.pre} tabindex="0">
+      <pre id={preId} class={styles.pre} tabindex="0" data-collapsed={flag(long() && !open())} onKeyDown={selectCode}>
         <code innerHTML={props.html} />
       </pre>
+      <Show when={long()}>
+        <button type="button" class={styles.toggle} aria-expanded={open()} aria-controls={preId} onClick={toggle}>
+          {open() ? "Show fewer lines" : `Show all ${lines()} lines`}
+          <Icon name="chevron-down" class={styles.chevron} />
+        </button>
+      </Show>
     </figure>
   );
 }

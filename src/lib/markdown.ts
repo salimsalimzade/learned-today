@@ -1,18 +1,14 @@
 // Markdown → prose blocks, run on the server for post pages, RSS and Telegram.
 // Raw HTML in a post is shown as text, and links only allow http(s), mailto and site paths.
 import { Marked, type RendererObject, type Token, type Tokens } from "marked";
+import { CARD_BODY_MAX, CARD_CODE_LINES } from "./card-preview";
 import { languageLabel, normalizeLanguage } from "./languages";
+import { safeHref } from "./links";
 import { lowlight } from "./lowlight";
-import type { PostCard, ProseBlock } from "./types";
+import type { CardPreview, ProseBlock } from "./types";
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-
-function safeHref(href: string) {
-  const h = href.trim();
-  if (/^(https?:|mailto:)/i.test(h) || h.startsWith("/") || h.startsWith("#")) return h;
-  return null;
-}
 
 const renderer: RendererObject = {
   html({ text }) {
@@ -170,34 +166,62 @@ export function toBlocks(markdown: string, plainLabel = "Plain text"): ProseBloc
   return blocks;
 }
 
-const SNIPPET_LINES = 6;
+// Rough rendered heights (px) for a card's compact prose: --text-body-sm lines, --space-4 between blocks. A card
+// column (680px less padding) fits about 90 characters a line; 80 errs toward cutting a little early.
+const LINE = 24;
+const GAP = 16;
+const CHARS_PER_LINE = 80;
 
-/** A block's words without its Markdown, for excerpts. */
-function plainText(token: Token): string {
-  if (token.type === "list") return (token as Tokens.List).items.map(plainText).join(" ");
-  if ("tokens" in token && token.tokens?.length) return token.tokens.map(plainText).join("");
-  if (token.type === "br") return " ";
-  return "text" in token ? token.text : "";
+const textOf = (html: string) => html.replace(/<[^>]+>/g, "").replace(/&[#a-z0-9]+;/gi, "x");
+const linesOf = (text: string, perLine = CHARS_PER_LINE) => Math.max(1, Math.ceil(text.trim().length / perLine));
+const codeLines = (code: string) => code.split("\n").length;
+
+function blockHeight(b: ProseBlock): number {
+  if (b.kind === "code") {
+    const lines = codeLines(b.code);
+    // header with Copy, padding, the visible lines, then "Show all" when it's longer (measured in a card)
+    return 42 + 24 + Math.min(lines, CARD_CODE_LINES) * LINE + (lines > CARD_CODE_LINES ? 41 : 0);
+  }
+  switch (b.tag) {
+    case "h2":
+    case "h3":
+      return LINE + GAP;
+    case "hr":
+      return 1;
+    case "table":
+      return (b.html.match(/<tr[\s>]/g)?.length ?? 1) * 33;
+    case "ul":
+    case "ol":
+      return b.html
+        .split(/<li[\s>]/)
+        .slice(1)
+        .reduce((h, item) => h + linesOf(textOf(item), CHARS_PER_LINE - 6) * LINE + 8, 0);
+    default:
+      return linesOf(textOf(b.html)) * LINE;
+  }
 }
 
 /**
- * What a feed card shows under the title, from the note's first block: its code (the first few lines,
- * highlighted) when the note opens with a code block, otherwise its text.
+ * What a feed card shows: the note's blocks until they fill CARD_BODY_MAX, judged by estimated height so the
+ * server decides and the page doesn't shift. The block that crosses the line is kept (the card clamps and fades
+ * it); everything after is left out, and the card links to the post for it.
  */
-export function toPreview(markdown: string, plainLabel = "Plain text"): Pick<PostCard, "excerpt" | "snippet"> {
-  const first = (marked.lexer(markdown) as Token[]).find((t) => t.type !== "space" && t.type !== "hr");
-  if (!first) return { excerpt: "", snippet: null };
-  if (first.type === "code") {
-    const t = first as Tokens.Code;
-    const lang = normalizeLanguage(t.lang);
-    const lines = t.text.replace(/^\s*\n/, "").split("\n");
-    const code = lines.slice(0, SNIPPET_LINES).join("\n");
-    return {
-      excerpt: "",
-      snippet: { label: languageLabel(lang, plainLabel), html: highlight(code, lang), truncated: lines.length > SNIPPET_LINES },
-    };
+export function toCardPreview(markdown: string): CardPreview {
+  const all = toBlocks(markdown, "Plain text");
+  const blocks: ProseBlock[] = [];
+  let height = 0;
+  for (const b of all) {
+    const h = (blocks.length ? GAP : 0) + blockHeight(b);
+    // Text still reads when the cut falls inside it. A code block or table cut after its first lines doesn't,
+    // so it shows whole (one line of the card's slack allowed) or waits behind "Read more".
+    const whole = b.kind === "code" || b.tag === "table";
+    if (blocks.length && (height > CARD_BODY_MAX - 2 * LINE || (whole && height + h > CARD_BODY_MAX + LINE))) break;
+    height += h;
+    blocks.push(b);
   }
-  return { excerpt: plainText(first).replace(/\s+/g, " ").trim().slice(0, 280), snippet: null };
+  const hidden = all.slice(blocks.length);
+  const truncated = hidden.length > 0 || height > CARD_BODY_MAX;
+  return { blocks, truncated, hidden: hidden.length };
 }
 
 /** Full HTML for RSS readers, with highlighted code blocks styled inline. */

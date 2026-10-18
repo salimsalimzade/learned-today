@@ -17,19 +17,19 @@ export interface TopicRef {
   name: string;
 }
 
-/** The opening lines of a note that starts with code. `html` is pre-escaped by lib/markdown. */
-export interface CodeSnippet {
-  label: string;
-  html: string;
-  /** The code goes on past these lines. */
+/** How much of a note a feed card shows (lib/markdown toCardPreview). */
+export interface CardPreview {
+  blocks: ProseBlock[];
+  /** Longer than a card: the body is clamped and "Read more" links to the rest. */
   truncated: boolean;
+  /** Blocks left out entirely. */
+  hidden: number;
 }
 
 export interface PostCard {
   id: string;
   title: string;
-  excerpt: string;
-  snippet: CodeSnippet | null;
+  preview: CardPreview;
   author: AuthorRef;
   topic: TopicRef;
   tags: string[];
@@ -49,7 +49,8 @@ export interface PostLink {
   title: string;
 }
 
-export interface PostDetail extends PostCard {
+/** A post page has the whole body, so no card preview. */
+export interface PostDetail extends Omit<PostCard, "preview"> {
   blocks: ProseBlock[];
   prev: PostLink | null;
   next: PostLink | null;

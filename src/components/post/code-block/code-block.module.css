@@ -54,3 +54,43 @@
 .code[data-editing] .pre {
   min-height: 72px;
 }
+
+/* Feed cards: the line count beside the language, and long blocks opening at CARD_CODE_LINES (4) lines. */
+.lines {
+  margin-inline-start: var(--space-3);
+}
+/* max-height is the content box, so this is 4 lines; the bottom padding shows a faded peek of the next. */
+.pre[data-collapsed] {
+  max-height: calc(4 * 24px);
+  overflow-y: hidden;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 20px), transparent);
+}
+.toggle {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--control-h);
+  margin: 0;
+  border: 0;
+  border-top: var(--hairline) solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: var(--text-ui);
+  cursor: pointer;
+}
+.toggle:hover {
+  background: var(--bg-hover);
+}
+.toggle:focus-visible {
+  outline-offset: -2px;
+}
+.chevron {
+  transition: transform var(--fade-duration) var(--fade-easing);
+}
+.toggle[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}

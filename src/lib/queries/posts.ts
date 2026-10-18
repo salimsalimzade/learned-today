@@ -48,7 +48,7 @@ export const getPost = query(async (id: string): Promise<PostDetail | null> => {
   const ctx = await getCtx();
   const row = await getPostRow(Number(id));
   if (!row) return null;
-  const [card] = await toCards([row], ctx.user?.id ?? null);
+  const [{ preview: _preview, ...card }] = await toCards([row], ctx.user?.id ?? null);
   const [prev, next] = await Promise.all([neighbourPost(card.publishedAt, true), neighbourPost(card.publishedAt, false)]);
   return {
     ...card,
