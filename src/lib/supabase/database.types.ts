@@ -246,7 +246,7 @@ isOneToOne: false
           Views: {
             "public_posts": {
                   Row: {
-                    "author_avatar_url": string | null,"author_handle": string | null,"author_id": string | null,"author_name": string | null,"body_md": string | null,"excerpt": string | null,"id": number | null,"published_at": string | null,"reactions": Json | null,"read_minutes": number | null,"tags": (string)[] | null,"title": string | null,"topic_name": string | null,"topic_slug": string | null
+                    "author_avatar_url": string | null,"author_handle": string | null,"author_id": string | null,"author_name": string | null,"body_md": string | null,"id": number | null,"published_at": string | null,"reactions": Json | null,"read_minutes": number | null,"tags": (string)[] | null,"title": string | null,"topic_name": string | null,"topic_slug": string | null
                   }
                   ComputedFields: never
                   Relationships: [
@@ -274,7 +274,6 @@ isOneToOne: false
 "author_id": string | null,
 "author_name": string | null,
 "body_md": string | null,
-"excerpt": string | null,
 "id": number | null,
 "published_at": string | null,
 "reactions": Json | null,
@@ -320,7 +319,6 @@ isOneToOne: false
 "author_id": string | null,
 "author_name": string | null,
 "body_md": string | null,
-"excerpt": string | null,
 "id": number | null,
 "published_at": string | null,
 "reactions": Json | null,
@@ -343,7 +341,6 @@ isOneToOne: false
 "author_id": string | null,
 "author_name": string | null,
 "body_md": string | null,
-"excerpt": string | null,
 "id": number | null,
 "published_at": string | null,
 "reactions": Json | null,

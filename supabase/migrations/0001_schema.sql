@@ -92,9 +92,6 @@ select
   p.id,
   p.title,
   p.body_md,
-  left(regexp_replace(split_part(p.body_md, E'
-
-', 1), '[`*_>#\[\]]|\([^)]*\)', '', 'g'), 220) as excerpt,
   p.read_minutes,
   p.published_at,
   t.slug as topic_slug,
