@@ -1,5 +1,4 @@
 # Deploy to Cloudflare Workers after CI passes on main (or by hand from the Actions tab).
-# Not wired yet: the deploy step is a placeholder. To turn it on, see the TODO at the bottom.
 
 name: Deploy
 
@@ -46,18 +45,15 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_TELEGRAM_BOT_USERNAME: ${{ vars.VITE_TELEGRAM_BOT_USERNAME }}
 
       - name: Deploy
-        run: echo "Cloudflare Workers deploy is not configured yet. Build succeeded; nothing was deployed."
-
-      # TODO: Cloudflare Workers. Replace the placeholder step above with this once:
-      #   1. vite.config.ts sets nitro: { preset: "cloudflare-module" } and a wrangler.jsonc exists.
-      #   2. Secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are added to the
-      #      "production" environment (Settings → Environments).
-      #
-      # - name: Deploy
-      #   uses: cloudflare/wrangler-action@v4
-      #   with:
-      #     apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      #     accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      #     command: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

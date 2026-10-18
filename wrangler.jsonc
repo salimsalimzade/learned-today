@@ -1,0 +1,8 @@
+{
+  "name": "learned-today",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2026-10-01",
+  // process.env.* in the server code (SUPABASE_SECRET_KEY, TELEGRAM_*) needs both flags.
+  "compatibility_flags": ["nodejs_compat", "nodejs_compat_populate_process_env"],
+  "assets": { "directory": ".output/public", "binding": "ASSETS" }
+}

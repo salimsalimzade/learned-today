@@ -1,5 +1,6 @@
 # Format, lint, typecheck and build on every PR to main and every push to main.
-# Deploy (Cloudflare Workers) will be a separate workflow later.
+# Deploy (Cloudflare Workers) is a separate workflow: deploy.yml. This build is only a compile
+# check, so it runs without the production VITE_* values and the app falls back to mock data.
 
 name: CI
 

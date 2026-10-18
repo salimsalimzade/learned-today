@@ -1,3 +1,6 @@
 allowBuilds:
   # postinstall runs `lefthook install` to set up the git hooks (it skips this when CI is set).
+  # esbuild and workerd (pulled in by wrangler) postinstall-link their native binaries.
+  esbuild: true
   lefthook: true
+  workerd: true

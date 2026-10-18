@@ -7,7 +7,7 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [solidStart(), nitro()],
+  plugins: [solidStart(), nitro({ preset: "cloudflare-module" })],
   // Port 3000 matches VITE_SITE_URL and the OAuth redirect URLs in supabase/config.toml.
   // allowedHosts lets a tunnel (cloudflared, ngrok) reach the dev server so Telegram can call
   // the webhook while you test. A leading dot allows every subdomain.
@@ -27,7 +27,5 @@ export default defineConfig({
   optimizeDeps: {
     include: ["@solidjs/start > @jridgewell/trace-mapping"],
   },
-  // No preset is set on purpose. Nitro detects Vercel and Netlify when it builds
-  // there, and falls back to a plain Node server everywhere else.
-  // To pin one: nitro: { preset: "vercel" } (or "netlify", "node-server").
+  // The preset is pinned to Cloudflare Workers above; wrangler.jsonc holds the Worker settings.
 });
