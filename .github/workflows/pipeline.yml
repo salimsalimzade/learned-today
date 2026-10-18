@@ -1,36 +1,61 @@
-# Deploy to Cloudflare Workers after CI passes on main (or by hand from the Actions tab).
-
-name: Deploy
+name: Pipeline
 
 on:
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  pull_request:
+    branches: [main]
+  push:
     branches: [main]
   workflow_dispatch:
-
-# One deploy at a time; a newer one waits instead of cancelling a deploy halfway.
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
 
 permissions:
   contents: read
 
 jobs:
-  deploy:
-    # From workflow_run, only deploy when CI succeeded.
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+  ci:
     runs-on: ubuntu-latest
-    environment: production
+    concurrency:
+      group: ci-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          # Deploy the exact commit CI tested, not whatever main points to now.
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      # Version comes from "packageManager" in package.json.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Format
+        run: pnpm exec biome format --reporter=github .
+
+      - name: Lint
+        run: pnpm exec biome check --formatter-enabled=false --reporter=github .
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+  deploy:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
 
