@@ -1,7 +1,9 @@
 import { createAsync, useAction } from "@solidjs/router";
+import { format } from "date-fns";
 import { createEffect, createMemo, createSignal, onMount } from "solid-js";
 import { type SearchOption, SearchSelect, showToast } from "~/components/ui-kit";
 import { saveTimeZone } from "~/lib/actions/prefs";
+import { inTimeZone } from "~/lib/format";
 import { deleteCookie, readTimeZoneChoice, TZ_CHOICE_COOKIE, TZ_COOKIE, writeCookie } from "~/lib/prefs";
 import { getSession } from "~/lib/queries/session";
 import styles from "./time-zone-picker.module.css";
@@ -10,14 +12,10 @@ const AUTO = "auto";
 
 const name = (zone: string) => zone.replace(/_/g, " ");
 
-/** "GMT+4" for a zone right now, or "" where the browser can't say (no shortOffset support). */
+/** "GMT+4" or "GMT+5:30" for a zone right now, or "" for a name this browser doesn't know. */
 function offsetOf(zone: string, now: Date) {
   try {
-    return (
-      new Intl.DateTimeFormat("en", { timeZone: zone, timeZoneName: "shortOffset" })
-        .formatToParts(now)
-        .find((p) => p.type === "timeZoneName")?.value ?? ""
-    );
+    return format(inTimeZone(now, zone), "O");
   } catch {
     return "";
   }

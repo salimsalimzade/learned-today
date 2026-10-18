@@ -1,41 +1,41 @@
+// Dates as people see them, always on the clock of the visitor's time zone: the one they picked in the footer,
+// else their browser's (readTimeZone in prefs.ts). Works the same on the server and in the browser, so the
+// server-rendered page and the hydrated one agree. date-fns does the formatting and the calendar maths;
+// TZDate (@date-fns/tz) is a Date whose day, month and hour are read in a given zone.
+import { TZDate } from "@date-fns/tz";
+import { differenceInCalendarDays, format, parse } from "date-fns";
 import { readTimeZone } from "./prefs";
 
-const keyFormats = new Map<string, Intl.DateTimeFormat>();
+/** A day key ("2026-10-15") as a plain calendar date, for date-fns. Not a moment: no zone applies. */
+const KEY = "yyyy-MM-dd";
+const parseKey = (key: string) => parse(key, KEY, new Date());
 
-/** YYYY-MM-DD in the visitor's time zone (the default one when theirs isn't known). */
+/** The moment `date`, read on the clock in `timeZone`. */
+export function inTimeZone(date: string | Date, timeZone = readTimeZone()) {
+  return new TZDate(new Date(date).getTime(), timeZone);
+}
+
+/** YYYY-MM-DD in the visitor's time zone: the day a moment falls on there. Groups the feed into days. */
 export function dayKey(date: string | Date, timeZone = readTimeZone()) {
-  let fmt = keyFormats.get(timeZone);
-  if (!fmt) {
-    fmt = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit" });
-    keyFormats.set(timeZone, fmt);
-  }
-  return fmt.format(typeof date === "string" ? new Date(date) : date);
+  return format(inTimeZone(date, timeZone), KEY);
 }
 
-/** 15.10.2026, the format the designs use. */
+/** 15.10.2026, the format the designs use, on the visitor's calendar. */
 export function formatDate(date: string | Date) {
-  const [y, m, d] = dayKey(date).split("-");
-  return `${d}.${m}.${y}`;
+  return format(inTimeZone(date), "dd.MM.yyyy");
 }
 
+/** A day key in the same 15.10.2026 format. */
 export function formatDayKey(key: string) {
-  const [y, m, d] = key.split("-");
-  return `${d}.${m}.${y}`;
+  return format(parseKey(key), "dd.MM.yyyy");
 }
 
-function shiftKey(key: string, days: number) {
-  const [y, m, d] = key.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
-}
-
-/** "Today", "Yesterday" or the weekday, for sticky day headers. */
+/** "Today", "Yesterday" or the weekday ("Monday"), for sticky day headers. Today is today in the visitor's zone. */
 export function dayTitle(key: string) {
-  const today = dayKey(new Date());
-  if (key === today) return "Today";
-  if (key === shiftKey(today, -1)) return "Yesterday";
-  const [y, m, d] = key.split("-").map(Number);
-  const name = new Intl.DateTimeFormat("en-GB", { weekday: "long", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d, 12)));
-  return name.charAt(0).toUpperCase() + name.slice(1);
+  const days = differenceInCalendarDays(parseKey(dayKey(new Date())), parseKey(key));
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return format(parseKey(key), "EEEE");
 }
 
 export function initials(name: string) {
