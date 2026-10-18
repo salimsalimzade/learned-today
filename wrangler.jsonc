@@ -10,8 +10,22 @@
   // address share a budget, hence the room. namespace_id is any number unique within the account.
   "ratelimits": [
     // Pages and server functions (feed, search as you type, reactions, publishing).
-    { "name": "RATE_LIMIT", "namespace_id": "1001", "simple": { "limit": 120, "period": 10 } },
+    {
+      "name": "RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": { "limit": 120, "period": 10 }
+    },
     // RSS readers poll every few minutes; this is far above that.
-    { "name": "RATE_LIMIT_RSS", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
-  ]
+    {
+      "name": "RATE_LIMIT_RSS",
+      "namespace_id": "1002",
+      "simple": { "limit": 30, "period": 60 }
+    }
+  ],
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    }
+  }
 }
