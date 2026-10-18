@@ -23,6 +23,7 @@ import { parseStartPayload, startPayload } from "~/lib/telegram";
  * Confirmations and recaps are Telegram HTML with inline buttons; callback_data is
  *   undo:<start payload | all>   take back a follow from its confirmation
  *   list                         show what the chat follows (the Subscriptions button)
+ *   stop:<post id>               drop the follow that brought a note (its Stop following button)
  * Sending new-post messages is the notifier's job (supabase/functions/notifier).
  */
 
@@ -389,6 +390,23 @@ const DIGEST_BUTTONS: Button[] = [
   { text: "Subscriptions", callback_data: "list" },
 ];
 
+/** The follow that brought a note to a chat, most specific first: a tag, then the author, then "all". */
+async function followBehind(chatId: number, postId: number): Promise<Follow | null> {
+  if (isMock) return null;
+  const [follows, { data: post }] = await Promise.all([
+    listFollows(chatId),
+    db().from("public_posts").select("tags, author_handle").eq("id", postId).maybeSingle(),
+  ]);
+  if (!post) return null;
+  const tags = post.tags ?? [];
+  return (
+    follows.find((f) => f.target === "tag" && tags.includes(f.value)) ??
+    follows.find((f) => f.target === "author" && f.value === post.author_handle) ??
+    follows.find((f) => f.target === "all") ??
+    null
+  );
+}
+
 /** What a chat follows, as the /list reply. */
 async function listReply(chatId: number) {
   const [follows, current] = await Promise.all([listFollows(chatId), getSchedule(chatId)]);
@@ -419,6 +437,23 @@ async function handleCallback(query: NonNullable<TelegramUpdate["callback_query"
   if (action === "list") {
     await answerCallback(query.id);
     return Response.json({ method: "sendMessage", chat_id: chat, text: await listReply(chat), disable_web_page_preview: true });
+  }
+
+  if (action === "stop") {
+    const postId = Number(arg);
+    const follow = Number.isInteger(postId) ? await followBehind(chat, postId) : null;
+    if (follow) await removeFollow(chat, follow);
+    await answerCallback(query.id, follow ? tx.removed(describe(follow)) : "You don't follow this any more.");
+    // The note stays; only its second button changes, so a second press can't do anything.
+    return Response.json({
+      method: "editMessageReplyMarkup",
+      chat_id: chat,
+      message_id: messageId,
+      reply_markup: keyboard([
+        { text: "Read", url: `${SITE_URL}/post/${postId}` },
+        { text: "Subscriptions", callback_data: "list" },
+      ]),
+    });
   }
 
   if (action === "undo") {

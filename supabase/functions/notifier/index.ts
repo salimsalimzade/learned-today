@@ -72,7 +72,8 @@ function message(post: Post) {
 
 const noteButtons = (post: Post): Button[] => [
   { text: "Read", url: `${SITE_URL}/post/${post.id}` },
-  { text: "Subscriptions", callback_data: "list" },
+  // The webhook works out which follow brought this note and drops it (routes/api/telegram.ts).
+  { text: "Stop following", callback_data: `stop:${post.id}` },
 ];
 
 const digestButtons: Button[] = [
