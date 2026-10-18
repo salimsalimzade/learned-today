@@ -8,7 +8,6 @@ import { ListingHeader } from "~/components/topic/listing-header";
 import { PeopleList } from "~/components/topic/people-list";
 import { TagFilter } from "~/components/topic/tag-filter";
 import { Tab, TabPanel, Tabs, TabsList, TagLink, TagList } from "~/components/ui-kit";
-import { useI18n } from "~/lib/i18n";
 import { getPosts, getTopic } from "~/lib/queries/posts";
 import styles from "~/styles/pages/listing.module.css";
 
@@ -20,7 +19,6 @@ export const route = {
 } satisfies RouteDefinition;
 
 export default function TopicPage() {
-  const { t } = useI18n();
   const params = useParams<{ slug: string }>();
   const [search, setSearch] = useSearchParams<{ tag?: string }>();
   const [tab, setTab] = createSignal("posts");
@@ -34,7 +32,7 @@ export default function TopicPage() {
         when={topic()}
         fallback={
           <Show when={topic() === null}>
-            <NotFound message={t("topic.notFound")} />
+            <NotFound message="That topic doesn't exist." />
           </Show>
         }
       >
@@ -43,23 +41,22 @@ export default function TopicPage() {
             <Title>{tp().name} · what-did-i-learn-today</Title>
             <Link rel="alternate" type="application/rss+xml" title={tp().name} href={`/topic/${tp().slug}/rss.xml`} />
             <ListingHeader
-              eyebrow={t("topic.eyebrow")}
+              eyebrow="Topic"
               title={tp().name}
-              description={tp().description}
-              stats={t("topic.stats", { posts: tp().postCount, authors: tp().authorCount })}
+              stats={`${tp().postCount} notes · ${tp().authorCount} authors`}
               follow={{ type: "topic", slug: tp().slug, name: tp().name }}
             />
 
             <Tabs value={tab()} onChange={setTab} class={styles.tabs}>
-              <TabsList aria-label={t("topic.sections")}>
+              <TabsList aria-label="Topic sections">
                 <Tab value="posts" count={tp().postCount}>
-                  {t("topic.tabPosts")}
+                  Notes
                 </Tab>
                 <Tab value="tags" count={tp().tags.length}>
-                  {t("topic.tabTags")}
+                  Tags
                 </Tab>
                 <Tab value="authors" count={tp().authorCount}>
-                  {t("topic.tabAuthors")}
+                  Authors
                 </Tab>
               </TabsList>
 

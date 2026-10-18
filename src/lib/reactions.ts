@@ -1,4 +1,3 @@
-import type { MessageKey } from "./i18n";
 import { REACTION_KINDS, type ReactionCounts, type ReactionKind } from "./types";
 
 export const REACTION_EMOJI: Record<ReactionKind, string> = {
@@ -10,7 +9,14 @@ export const REACTION_EMOJI: Record<ReactionKind, string> = {
   thanks: "🙏",
 };
 
-export const reactionLabelKey = (kind: ReactionKind) => `reactions.${kind}` as MessageKey;
+export const REACTION_LABELS: Record<ReactionKind, string> = {
+  learned: "Learned something",
+  like: "Like",
+  love: "Love",
+  funny: "Funny",
+  surprised: "Surprised",
+  thanks: "Thanks",
+};
 
 /** The tray order is the 1–6 shortcut order. */
 export const REACTIONS = REACTION_KINDS.map((kind, i) => ({ kind, emoji: REACTION_EMOJI[kind], key: String(i + 1) }));

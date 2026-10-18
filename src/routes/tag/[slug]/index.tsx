@@ -6,7 +6,6 @@ import { NotFound } from "~/components/layout/not-found";
 import { Page } from "~/components/layout/page";
 import { ListingHeader } from "~/components/topic/listing-header";
 import { TagLink, TagList } from "~/components/ui-kit";
-import { useI18n } from "~/lib/i18n";
 import { getPosts, getTag } from "~/lib/queries/posts";
 import styles from "~/styles/pages/listing.module.css";
 
@@ -28,7 +27,6 @@ export const route = {
 } satisfies RouteDefinition;
 
 export default function TagPage() {
-  const { t } = useI18n();
   const params = useParams<{ slug: string }>();
   const slug = () => decode(params.slug);
   const tag = createAsync(() => getTag(slug()));
@@ -41,7 +39,7 @@ export default function TagPage() {
         when={tag()}
         fallback={
           <Show when={tag() === null}>
-            <NotFound message={t("tag.notFound")} />
+            <NotFound message="That tag doesn't exist." />
           </Show>
         }
       >
@@ -55,12 +53,12 @@ export default function TagPage() {
               href={`/tag/${encodeURIComponent(tg().slug)}/rss.xml`}
             />
             <ListingHeader
-              eyebrow={t("tag.eyebrow")}
+              eyebrow="Tag"
               title={<span class={styles["tag-title"]}>#{tg().slug}</span>}
-              stats={t("topic.stats", { posts: tg().postCount, authors: tg().authorCount })}
+              stats={`${tg().postCount} notes · ${tg().authorCount} authors`}
               follow={{ type: "tag", slug: tg().slug, name: `#${tg().slug}` }}
             />
-            <TagList class={styles.related} aria-label={t("tag.topics")}>
+            <TagList class={styles.related} aria-label="Topics">
               <For each={tg().topics}>
                 {(topic) => (
                   <li>

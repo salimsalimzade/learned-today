@@ -1,7 +1,6 @@
 import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from "solid-js";
 import { FieldCounter, fieldStyles, Icon, TagChip, tagStyles } from "~/components/ui-kit";
 import { cx, flag } from "~/lib/cx";
-import { useI18n } from "~/lib/i18n";
 import { normalizeTag, TAG_PATTERN, TAGS_MAX } from "~/lib/schemas/post";
 import styles from "./tag-input.module.css";
 
@@ -20,7 +19,6 @@ interface TagInputProps {
  * lets the field wrap so every chip shows. Each chip posts as a hidden `tags` input.
  */
 export function TagInput(props: TagInputProps) {
-  const { t } = useI18n();
   const [draft, setDraft] = createSignal("");
   const [hidden, setHidden] = createSignal(0);
   const [expanded, setExpanded] = createSignal(false);
@@ -101,7 +99,7 @@ export function TagInput(props: TagInputProps) {
             <span class={styles.chip} data-chip="">
               <TagChip
                 end={
-                  <button type="button" class={styles.remove} aria-label={t("share.tagRemove", { tag })} onClick={() => remove(tag)}>
+                  <button type="button" class={styles.remove} aria-label={`Remove tag: ${tag}`} onClick={() => remove(tag)}>
                     <Icon name="x" />
                   </button>
                 }
@@ -116,7 +114,7 @@ export function TagInput(props: TagInputProps) {
           <button
             type="button"
             class={cx(tagStyles.tag, styles.more)}
-            aria-label={t("share.tagMore", { n: hidden(), tags: hiddenTags().join(", ") })}
+            aria-label={`${hidden()} more tags: ${hiddenTags().join(", ")}`}
             onClick={() => setExpanded(true)}
           >
             +{hidden()}
@@ -127,7 +125,7 @@ export function TagInput(props: TagInputProps) {
           id={props.id}
           type="text"
           class={styles.draft}
-          placeholder={props.value.length < TAGS_MAX ? "#teq" : ""}
+          placeholder={props.value.length < TAGS_MAX ? "#tag" : ""}
           disabled={props.value.length >= TAGS_MAX}
           aria-describedby={`${props.id}-d`}
           autocomplete="off"
@@ -146,12 +144,12 @@ export function TagInput(props: TagInputProps) {
           when={props.error || invalid()}
           fallback={
             <p class={fieldStyles.description} id={`${props.id}-d`}>
-              {t("share.tagsHelp")}
+              Type #, press Enter or space to add. Up to 5.
             </p>
           }
         >
           <p class={fieldStyles.error} id={`${props.id}-d`}>
-            {props.error ?? t("errors.tagInvalid")}
+            {props.error ?? "Tags can only have letters, digits and hyphens."}
           </p>
         </Show>
         <FieldCounter value={props.value.length} max={TAGS_MAX} />

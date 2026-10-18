@@ -4,7 +4,6 @@ import { Placeholder } from "@tiptap/extensions";
 import { Markdown } from "@tiptap/markdown";
 import StarterKit from "@tiptap/starter-kit";
 import type { Owner } from "solid-js";
-import type { MessageKey } from "~/lib/i18n";
 import { normalizeLanguage } from "~/lib/languages";
 import { lowlight } from "~/lib/lowlight";
 import { codeBlockView } from "./code-block-view";
@@ -46,7 +45,7 @@ const SubmitShortcut = (onSubmit: () => void) =>
     },
   });
 
-export function editorExtensions(opts: { t: (key: MessageKey) => string; owner: Owner | null; slash: SlashRender; onSubmit: () => void }) {
+export function editorExtensions(opts: { owner: Owner | null; slash: SlashRender; onSubmit: () => void }) {
   return [
     StarterKit.configure({
       codeBlock: false,
@@ -63,10 +62,10 @@ export function editorExtensions(opts: { t: (key: MessageKey) => string; owner: 
       },
     }),
     CodeBlockLowlight.extend({ addNodeView: () => codeBlockView(opts.owner) }).configure({ lowlight, defaultLanguage: "txt" }),
-    Placeholder.configure({ placeholder: () => opts.t("share.bodyPlaceholder") }),
+    Placeholder.configure({ placeholder: () => "What did you learn? Type / to add a block." }),
     Markdown,
     FenceEnter,
     SubmitShortcut(opts.onSubmit),
-    SlashCommands({ t: opts.t, render: opts.slash }),
+    SlashCommands({ render: opts.slash }),
   ];
 }

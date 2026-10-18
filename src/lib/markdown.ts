@@ -78,7 +78,7 @@ function stripOuter(html: string) {
   return m ? m[2] : html;
 }
 
-export function toBlocks(markdown: string, plainLabel = "Düz mətn"): ProseBlock[] {
+export function toBlocks(markdown: string, plainLabel = "Plain text"): ProseBlock[] {
   const blocks: ProseBlock[] = [];
   for (const token of marked.lexer(markdown) as Token[]) {
     switch (token.type) {
@@ -133,16 +133,4 @@ export function toBlocks(markdown: string, plainLabel = "Düz mətn"): ProseBloc
 /** Full HTML for RSS readers, with plain code blocks. */
 export function toHtml(markdown: string) {
   return marked.parse(markdown) as string;
-}
-
-/** Plain text of the first paragraph, for card excerpts. */
-export function excerptOf(markdown: string, max = 220) {
-  const para = (marked.lexer(markdown) as Token[]).find((t) => t.type === "paragraph") as Tokens.Paragraph | undefined;
-  const text = (para?.text ?? "")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/[*_~]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return text.length > max ? `${text.slice(0, max - 1).replace(/\s+\S*$/, "")}…` : text;
 }

@@ -6,7 +6,6 @@ import { NotFound } from "~/components/layout/not-found";
 import { Page } from "~/components/layout/page";
 import { ListingHeader } from "~/components/topic/listing-header";
 import { Avatar, TagLink, TagList } from "~/components/ui-kit";
-import { useI18n } from "~/lib/i18n";
 import { getAuthor, getPosts } from "~/lib/queries/posts";
 import styles from "~/styles/pages/listing.module.css";
 
@@ -20,7 +19,6 @@ export const route = {
 } satisfies RouteDefinition;
 
 export default function AuthorPage() {
-  const { t } = useI18n();
   const params = useParams<{ handle: string }>();
   const author = createAsync(() => getAuthor(params.handle));
   const posts = createAsync(() => getPosts({ author: params.handle }));
@@ -32,7 +30,7 @@ export default function AuthorPage() {
         when={author()}
         fallback={
           <Show when={author() === null}>
-            <NotFound message={t("author.notFound")} />
+            <NotFound message="That author doesn't exist." />
           </Show>
         }
       >
@@ -41,14 +39,14 @@ export default function AuthorPage() {
             <Title>{a().name} · what-did-i-learn-today</Title>
             <Link rel="alternate" type="application/rss+xml" title={a().name} href={`/author/${a().handle}/rss.xml`} />
             <ListingHeader
-              eyebrow={t("author.eyebrow")}
+              eyebrow="Author"
               leading={<Avatar name={a().name} src={a().avatarUrl} size="lg" />}
               title={a().name}
               description={`@${a().handle} · ${a().provider === "github" ? "GitHub" : "Google"}`}
-              stats={t("author.stats", { posts: a().postCount, reactions: a().reactionCount })}
+              stats={`${a().postCount} notes · ${a().reactionCount} reactions`}
               follow={{ type: "author", slug: a().handle, name: a().name }}
             />
-            <TagList class={styles.related} aria-label={t("tag.topics")}>
+            <TagList class={styles.related} aria-label="Topics">
               <For each={a().topics}>
                 {(topic) => (
                   <li>

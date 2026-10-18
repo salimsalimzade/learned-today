@@ -2,8 +2,7 @@ import { Popover as KPopover } from "@kobalte/core/popover";
 import { For } from "solid-js";
 import { Icon } from "~/components/ui-kit";
 import { flag } from "~/lib/cx";
-import { useI18n } from "~/lib/i18n";
-import { REACTIONS, reactionLabelKey } from "~/lib/reactions";
+import { REACTION_LABELS, REACTIONS } from "~/lib/reactions";
 import type { ReactionKind } from "~/lib/types";
 import styles from "./reaction-tray.module.css";
 
@@ -18,7 +17,6 @@ interface TrayProps {
 
 /** The "+" pill and the six-emoji tray above it. Arrow keys move, 1–6 pick, Esc closes. */
 export function ReactionTray(props: TrayProps) {
-  const { t } = useI18n();
   let tray: HTMLDivElement | undefined;
 
   const pick = (kind: ReactionKind) => {
@@ -45,7 +43,7 @@ export function ReactionTray(props: TrayProps) {
 
   return (
     <KPopover open={props.open} onOpenChange={props.onOpenChange} placement="top-start" gutter={8}>
-      <KPopover.Trigger class={props.triggerClass} aria-label={t("reactions.add")} aria-keyshortcuts="r">
+      <KPopover.Trigger class={props.triggerClass} aria-label="Add reaction" aria-keyshortcuts="r">
         <Icon name="plus" />
       </KPopover.Trigger>
       <KPopover.Portal>
@@ -53,7 +51,7 @@ export function ReactionTray(props: TrayProps) {
           ref={tray}
           class={styles.tray}
           role="toolbar"
-          aria-label={t("reactions.pick")}
+          aria-label="Pick a reaction"
           onKeyDown={onKeyDown}
           onOpenAutoFocus={(e) => {
             e.preventDefault();
@@ -71,7 +69,7 @@ export function ReactionTray(props: TrayProps) {
                 class={styles.item}
                 data-pressed={flag(props.mine === r.kind)}
                 aria-pressed={props.mine === r.kind}
-                aria-label={t(reactionLabelKey(r.kind))}
+                aria-label={REACTION_LABELS[r.kind]}
                 aria-keyshortcuts={r.key}
                 onClick={() => pick(r.kind)}
               >

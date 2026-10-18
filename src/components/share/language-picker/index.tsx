@@ -3,7 +3,6 @@ import { createMemo, createSignal, createUniqueId, For, Show } from "solid-js";
 import { Icon, selectStyles } from "~/components/ui-kit";
 import { cx, flag } from "~/lib/cx";
 import { fold } from "~/lib/format";
-import { useI18n } from "~/lib/i18n";
 import { LANGUAGES, languageLabel, normalizeLanguage } from "~/lib/languages";
 import { readRecentLanguages, rememberLanguage } from "../recent-languages";
 import styles from "./language-picker.module.css";
@@ -16,10 +15,9 @@ interface Row {
 
 /**
  * The language button in a code block's header. Opens a searchable list:
- * "Son istifadə" (recent) first, then every language with its short name.
+ * "Recent" first, then every language with its short name.
  */
 export function LanguagePicker(props: { value: string; onChange: (id: string) => void; onDone?: () => void }) {
-  const { t } = useI18n();
   const listId = createUniqueId();
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal("");
@@ -28,7 +26,7 @@ export function LanguagePicker(props: { value: string; onChange: (id: string) =>
   let input: HTMLInputElement | undefined;
   let list: HTMLUListElement | undefined;
 
-  const label = (id: string) => languageLabel(id, t("lang.plain"));
+  const label = (id: string) => languageLabel(id, "Plain text");
   const current = () => normalizeLanguage(props.value);
 
   const rows = createMemo<Row[]>(() => {
@@ -99,8 +97,8 @@ export function LanguagePicker(props: { value: string; onChange: (id: string) =>
               aria-expanded="true"
               aria-controls={listId}
               aria-activedescendant={rows().length ? optionId(active()) : undefined}
-              aria-label={t("lang.searchLabel")}
-              placeholder={t("lang.search")}
+              aria-label="Search languages"
+              placeholder="Search languages…"
               autocomplete="off"
               spellcheck={false}
               value={query()}
@@ -111,13 +109,13 @@ export function LanguagePicker(props: { value: string; onChange: (id: string) =>
               onKeyDown={onKeyDown}
             />
           </div>
-          <ul class={cx(selectStyles.listbox, styles.list)} id={listId} ref={list} role="listbox" aria-label={t("lang.listLabel")}>
+          <ul class={cx(selectStyles.listbox, styles.list)} id={listId} ref={list} role="listbox" aria-label="Code language">
             <For each={rows()}>
               {(row, i) => (
                 <>
                   <Show when={!query().trim() && (i() === 0 || rows()[i() - 1].section !== row.section)}>
                     <li class={selectStyles.section} role="presentation">
-                      {row.section === "recent" ? t("lang.recent") : t("lang.all")}
+                      {row.section === "recent" ? "Recent" : "All"}
                     </li>
                   </Show>
                   <li

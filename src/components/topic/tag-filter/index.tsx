@@ -1,16 +1,14 @@
 import { For } from "solid-js";
 import { TagList, TagToggle } from "~/components/ui-kit";
-import { useI18n } from "~/lib/i18n";
 import type { TagCount } from "~/lib/types";
 
-/** Single-choice tag chips ("hamısı" + each tag with its count). Pressed chips use accent-soft. */
+/** Single-choice tag chips ("all" + each tag with its count). Pressed chips use accent-soft. */
 export function TagFilter(props: { tags: TagCount[]; value: string | null; onChange: (tag: string | null) => void }) {
-  const { t } = useI18n();
   return (
-    <TagList aria-label={t("topic.filter")}>
+    <TagList aria-label="Filter by tag">
       <li>
         <TagToggle noHash pressed={props.value === null} onChange={() => props.onChange(null)}>
-          {t("topic.all")}
+          all
         </TagToggle>
       </li>
       <For each={props.tags}>

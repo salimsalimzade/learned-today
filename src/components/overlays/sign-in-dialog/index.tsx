@@ -2,7 +2,6 @@ import { createAsync } from "@solidjs/router";
 import { createEffect, Show } from "solid-js";
 import { Button, Dialog, DialogBody, DialogNote, Kbd } from "~/components/ui-kit";
 import { isMock } from "~/lib/env";
-import { useI18n } from "~/lib/i18n";
 import { getSession } from "~/lib/queries/session";
 import type { Provider } from "~/lib/types";
 import { useOverlays } from "../overlay-provider";
@@ -11,7 +10,6 @@ import styles from "./sign-in-dialog.module.css";
 
 /** Opens when a guest reacts or tries to share. Closes by itself once a session exists. */
 export function SignInDialog() {
-  const { t } = useI18n();
   const overlays = useOverlays();
   const session = createAsync(() => getSession());
   const signIn = useSignIn();
@@ -22,7 +20,7 @@ export function SignInDialog() {
 
   const title = () => {
     const reason = overlays.signIn()?.reason;
-    return reason === "react" ? t("signin.titleReact") : reason === "share" ? t("signin.titleShare") : t("signin.title");
+    return reason === "react" ? "Sign in to react" : reason === "share" ? "Sign in to share" : "Sign in";
   };
 
   const start = (provider: Provider) => signIn.start(provider, overlays.signIn()?.next ?? "/");
@@ -32,21 +30,21 @@ export function SignInDialog() {
       open={!!overlays.signIn()}
       onOpenChange={(open) => !open && overlays.closeSignIn()}
       title={title()}
-      description={t("signin.description")}
+      description="You can leave one reaction per note. You also need to sign in to share a note."
     >
       <DialogBody class={styles.providers}>
         <Button block onClick={() => start("google")} disabled={signIn.pending()}>
-          {t("signin.google")}
+          Sign in with Google
         </Button>
         <Button block onClick={() => start("github")} disabled={signIn.pending()}>
-          {t("signin.github")}
+          Sign in with GitHub
         </Button>
       </DialogBody>
       <Show when={isMock}>
-        <DialogNote>{t("signin.mockNote")}</DialogNote>
+        <DialogNote>Demo mode: Supabase isn't connected, so you sign in as a sample account.</DialogNote>
       </Show>
       <DialogNote class={styles["hover-only"]}>
-        <Kbd>esc</Kbd> {t("signin.escCloses")}
+        <Kbd>esc</Kbd> closes.
       </DialogNote>
     </Dialog>
   );

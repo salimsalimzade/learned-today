@@ -2,7 +2,6 @@ import { createAsync, useNavigate } from "@solidjs/router";
 import { createEffect, createMemo, createSignal, For, type JSX, on, onCleanup, Show } from "solid-js";
 import { buttonClass, DialogPrimitive as D, dialogStyles, Icon, type IconName, Kbd, KbdHint } from "~/components/ui-kit";
 import { fold, formatDate } from "~/lib/format";
-import { useI18n } from "~/lib/i18n";
 import { searchAll } from "~/lib/queries/search";
 import { useTheme } from "~/lib/theme";
 import { useOverlays } from "../overlay-provider";
@@ -38,7 +37,6 @@ function highlight(text: string, q: string): JSX.Element {
 
 /** "/" anywhere, or the header's search button. Searches notes, tags, topics, authors and commands. */
 export function CommandPalette() {
-  const { t, locale, setLocale } = useI18n();
   const theme = useTheme();
   const overlays = useOverlays();
   const navigate = useNavigate();
@@ -79,7 +77,7 @@ export function CommandPalette() {
         const tag = inTitle ? undefined : p.tags.find((x) => fold(x).includes(fold(q.replace(/^#/, ""))));
         out.push({
           id: `p-${p.id}`,
-          group: t("palette.posts"),
+          group: "Notes",
           title: highlight(p.title, q),
           meta: (
             <>
@@ -92,39 +90,32 @@ export function CommandPalette() {
       for (const tag of r.tags)
         out.push({
           id: `t-${tag.slug}`,
-          group: t("palette.tagsTopics"),
+          group: "Tags and topics",
           title: <>#{highlight(tag.slug, q)}</>,
           mono: true,
-          kind: t("palette.kindTag", { n: tag.count }),
+          kind: `tag · ${tag.count} notes`,
           run: go(`/tag/${encodeURIComponent(tag.slug)}`),
         });
       for (const topic of r.topics)
         out.push({
           id: `c-${topic.slug}`,
-          group: t("palette.tagsTopics"),
+          group: "Tags and topics",
           title: highlight(topic.name, q),
-          kind: t("palette.kindTopic", { n: topic.count }),
+          kind: `topic · ${topic.count} notes`,
           run: go(`/topic/${topic.slug}`),
         });
       for (const a of r.authors)
         out.push({
           id: `a-${a.handle}`,
-          group: t("palette.authors"),
+          group: "Authors",
           title: highlight(a.name, q),
-          kind: t("palette.kindAuthor", { n: a.count }),
+          kind: `author · ${a.count} notes`,
           run: go(`/author/${a.handle}`),
         });
     }
     const commands: Item[] = [
-      { id: "cmd-new", group: t("palette.commands"), title: t("palette.newNote"), icon: "plus", kbd: "n", run: go("/share") },
-      { id: "cmd-theme", group: t("palette.commands"), title: t("palette.toggleTheme"), icon: "moon", kbd: "t", run: () => theme.cycle() },
-      {
-        id: "cmd-lang",
-        group: t("palette.commands"),
-        title: t("palette.toggleLang"),
-        icon: "text",
-        run: () => setLocale(locale() === "az" ? "en" : "az"),
-      },
+      { id: "cmd-new", group: "Commands", title: "Write a new note", icon: "plus", kbd: "n", run: go("/share") },
+      { id: "cmd-theme", group: "Commands", title: "Switch theme", icon: "moon", kbd: "t", run: () => theme.cycle() },
     ];
     // Commands always show, under the results, as in the design.
     return [...out, ...commands];
@@ -160,7 +151,7 @@ export function CommandPalette() {
         <div class={styles.positioner}>
           <D.Content
             class={styles.palette}
-            aria-label={t("palette.label")}
+            aria-label="Search"
             onOpenAutoFocus={(e) => {
               e.preventDefault();
               input?.focus({ preventScroll: true });
@@ -177,22 +168,22 @@ export function CommandPalette() {
                 aria-controls="palette-list"
                 aria-autocomplete="list"
                 aria-activedescendant={activeId()}
-                aria-label={t("palette.inputLabel")}
-                placeholder={t("palette.placeholder")}
+                aria-label="Search notes, tags, topics or commands"
+                placeholder="Search notes, tags, topics…"
                 autocomplete="off"
                 spellcheck={false}
                 value={query()}
                 onInput={(e) => setQuery(e.currentTarget.value)}
                 onKeyDown={onKeyDown}
               />
-              <D.CloseButton class={buttonClass} data-variant="ghost" aria-label={t("common.close")}>
+              <D.CloseButton class={buttonClass} data-variant="ghost" aria-label="Close">
                 <Kbd>esc</Kbd>
               </D.CloseButton>
             </div>
-            <ul class={styles.list} id="palette-list" role="listbox" ref={list} aria-label={t("palette.label")}>
+            <ul class={styles.list} id="palette-list" role="listbox" ref={list} aria-label="Search">
               <Show when={showEmpty()}>
                 <li class={styles.group} role="presentation">
-                  {t("palette.empty", { q: debounced() })}
+                  {`Nothing found for “${debounced()}”.`}
                 </li>
               </Show>
               <For each={items()}>
@@ -237,13 +228,13 @@ export function CommandPalette() {
             <div class={styles.foot}>
               <KbdHint>
                 <Kbd>↑</Kbd>
-                <Kbd>↓</Kbd> {t("palette.select")}
+                <Kbd>↓</Kbd> select
               </KbdHint>
               <KbdHint>
-                <Kbd>↵</Kbd> {t("palette.open")}
+                <Kbd>↵</Kbd> open
               </KbdHint>
               <KbdHint>
-                <Kbd>esc</Kbd> {t("palette.close")}
+                <Kbd>esc</Kbd> close
               </KbdHint>
             </div>
           </D.Content>

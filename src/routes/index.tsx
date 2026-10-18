@@ -5,7 +5,6 @@ import { DayHead } from "~/components/feed/day-head";
 import { EmptyState, PostList, useListKeys } from "~/components/feed/post-list";
 import { Page } from "~/components/layout/page";
 import { Button } from "~/components/ui-kit";
-import { useI18n } from "~/lib/i18n";
 import { getFeed } from "~/lib/queries/posts";
 import styles from "~/styles/pages/feed.module.css";
 
@@ -13,16 +12,15 @@ export const route = {
   preload: () => getFeed(null),
 } satisfies RouteDefinition;
 
-/** One page of whole days. "Daha köhnə qeydlər" appends the next page below. */
+/** One page of whole days. "Older notes" appends the next page below. */
 function FeedPage(props: { cursor: string | null; last: boolean; first: boolean; onMore: (cursor: string) => void }) {
-  const { t } = useI18n();
   const page = createAsync(() => getFeed(props.cursor));
   return (
     <Show when={page()}>
       {(p) => (
         <>
           <Show when={props.first && !p().days.length}>
-            <EmptyState>{t("feed.empty")}</EmptyState>
+            <EmptyState>Nobody has shared anything yet. Be the first.</EmptyState>
           </Show>
           <For each={p().days}>
             {(day) => (
@@ -36,7 +34,7 @@ function FeedPage(props: { cursor: string | null; last: boolean; first: boolean;
             {(next) => (
               <div class={styles.more}>
                 <Button class={styles["more-button"]} onClick={() => props.onMore(next())}>
-                  {t("feed.older")}
+                  Older notes
                 </Button>
               </div>
             )}
@@ -48,17 +46,16 @@ function FeedPage(props: { cursor: string | null; last: boolean; first: boolean;
 }
 
 export default function Feed() {
-  const { t } = useI18n();
   const [cursors, setCursors] = createSignal<(string | null)[]>([null]);
   useListKeys();
-
+  console.log(cursors());
   return (
     <Page>
-      <h1 class="sr-only">{t("feed.title")}</h1>
+      <h1 class="sr-only">Feed</h1>
       <AskBanner />
       <For each={cursors()}>
         {(cursor, i) => (
-          <Suspense fallback={<EmptyState>{t("common.loading")}</EmptyState>}>
+          <Suspense fallback={<EmptyState>Loading…</EmptyState>}>
             <FeedPage cursor={cursor} first={i() === 0} last={i() === cursors().length - 1} onMore={(c) => setCursors([...cursors(), c])} />
           </Suspense>
         )}

@@ -3,13 +3,14 @@
 import { deleteCookie, setCookie } from "@solidjs/start/http";
 import { getRequestEvent } from "solid-js/web";
 import { isMock } from "../env";
-import { DEMO_USER_HANDLE } from "../mock/data";
-import { store } from "../mock/store";
-import { LANG_COOKIE, parseCookieHeader } from "../prefs";
+import { parseCookieHeader } from "../prefs";
 import { createSupabaseServerClient } from "../supabase/server";
-import type { Locale, SessionUser } from "../types";
+import type { SessionUser } from "../types";
 
 const DEMO_COOKIE = "lt_demo_user";
+
+/** Demo mode only (no Supabase keys): the sample account that "sign in" uses. */
+const DEMO_USER: SessionUser = { id: "demo", handle: "sebine-q", name: "Səbinə Quliyeva", avatarUrl: null, provider: "github" };
 
 /**
  * Cookies from the request event, not from h3's getCookie: after an action, SolidStart
@@ -22,21 +23,16 @@ export function requestCookies() {
 
 const getCookie = (name: string) => requestCookies()[name];
 
-/** Interface language of this request, for topic names and date words. */
-export function getLocale(): Locale {
-  return getCookie(LANG_COOKIE) === "en" ? "en" : "az";
-}
-
-/** Viewer handle and locale, the context every mock query needs. */
+/** Who is asking: the handle and the signed-in user. */
 export async function getCtx() {
   const viewer = await getViewer();
-  return { viewer: viewer?.handle ?? null, locale: getLocale(), user: viewer };
+  return { viewer: viewer?.handle ?? null, user: viewer };
 }
 
 export async function getViewer(): Promise<SessionUser | null> {
   if (isMock) {
     const handle = getCookie(DEMO_COOKIE);
-    return handle ? store.user(handle) : null;
+    return handle ? DEMO_USER : null;
   }
   const supabase = createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
@@ -54,7 +50,7 @@ export async function getViewer(): Promise<SessionUser | null> {
 
 /** Demo mode only: "sign in" as the sample account. */
 export function startDemoSession() {
-  setCookie(DEMO_COOKIE, DEMO_USER_HANDLE, { path: "/", httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
+  setCookie(DEMO_COOKIE, DEMO_USER.handle, { path: "/", httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 24 * 30 });
 }
 
 export function endDemoSession() {

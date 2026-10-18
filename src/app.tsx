@@ -15,13 +15,11 @@ import { OverlayProvider, useOverlays } from "./components/overlays/overlay-prov
 import { ShortcutsDialog } from "./components/overlays/shortcuts-dialog";
 import { SignInDialog } from "./components/overlays/sign-in-dialog";
 import { ToastRegion } from "./components/ui-kit";
-import { I18nProvider, useI18n } from "./lib/i18n";
 import { useShortcut } from "./lib/shortcuts";
 import { ThemeProvider, useTheme } from "./lib/theme";
 
 /** Root layout: header and footer around every route, overlays mounted once. */
 function Shell(props: ParentProps) {
-  const { t } = useI18n();
   const overlays = useOverlays();
   const theme = useTheme();
   const navigate = useNavigate();
@@ -40,9 +38,9 @@ function Shell(props: ParentProps) {
   return (
     <>
       <Title>what-did-i-learn-today</Title>
-      <Meta name="description" content={t("meta.description")} />
+      <Meta name="description" content="Learn one small thing every day and share it." />
       <a class={styles.skip} href="#main">
-        {t("common.skip")}
+        Skip to content
       </a>
       <div class={styles.app}>
         <Header />
@@ -64,15 +62,13 @@ export default function App() {
     <Router
       root={(props) => (
         <MetaProvider>
-          <I18nProvider>
-            <ThemeProvider>
-              <OverlayProvider>
-                <Suspense>
-                  <Shell>{props.children}</Shell>
-                </Suspense>
-              </OverlayProvider>
-            </ThemeProvider>
-          </I18nProvider>
+          <ThemeProvider>
+            <OverlayProvider>
+              <Suspense>
+                <Shell>{props.children}</Shell>
+              </Suspense>
+            </OverlayProvider>
+          </ThemeProvider>
         </MetaProvider>
       )}
     >

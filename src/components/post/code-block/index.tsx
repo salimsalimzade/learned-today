@@ -1,12 +1,10 @@
 import { createSignal, onCleanup } from "solid-js";
 import { Button, Icon, Tooltip, TooltipTrigger } from "~/components/ui-kit";
 import { flag } from "~/lib/cx";
-import { useI18n } from "~/lib/i18n";
 import styles from "./code-block.module.css";
 
-/** Copy button with a two-second "Kopyalandı" state and a polite announcement. */
+/** Copy button with a two-second "Copied" state and a polite announcement. */
 export function CopyButton(props: { code: () => string }) {
-  const { t } = useI18n();
   const [copied, setCopied] = createSignal(false);
   let timer: ReturnType<typeof setTimeout> | undefined;
   onCleanup(() => clearTimeout(timer));
@@ -20,21 +18,14 @@ export function CopyButton(props: { code: () => string }) {
 
   return (
     <>
-      <Tooltip content={t("code.copyLabel")}>
-        <TooltipTrigger
-          as={Button}
-          variant="ghost"
-          class={styles.copy}
-          data-copied={flag(copied())}
-          aria-label={t("code.copyLabel")}
-          onClick={copy}
-        >
+      <Tooltip content="Copy code">
+        <TooltipTrigger as={Button} variant="ghost" class={styles.copy} data-copied={flag(copied())} aria-label="Copy code" onClick={copy}>
           <Icon name={copied() ? "check" : "copy"} />
-          {copied() ? t("code.copied") : t("code.copy")}
+          {copied() ? "Copied" : "Copy"}
         </TooltipTrigger>
       </Tooltip>
       <span class="sr-only" aria-live="polite">
-        {copied() ? t("code.copied") : ""}
+        {copied() ? "Copied" : ""}
       </span>
     </>
   );

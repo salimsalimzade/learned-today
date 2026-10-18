@@ -1,14 +1,13 @@
 import type { ChainedCommands, Editor } from "@tiptap/core";
 import type { IconName } from "~/components/ui-kit";
-import type { MessageKey } from "~/lib/i18n";
 
 export type BlockId = "text" | "heading" | "list" | "steps" | "quote" | "code";
 
 export interface BlockDef {
   id: BlockId;
   icon: IconName;
-  label: MessageKey;
-  description: MessageKey;
+  label: string;
+  description: string;
   /** Extra words the slash menu matches on. */
   aliases: string[];
   apply: (chain: ChainedCommands, language?: string) => ChainedCommands;
@@ -19,49 +18,49 @@ export const BLOCKS: BlockDef[] = [
   {
     id: "text",
     icon: "text",
-    label: "editor.text",
-    description: "editor.textDesc",
-    aliases: ["paragraph", "abzas", "mətn"],
+    label: "Text",
+    description: "Plain paragraph",
+    aliases: ["paragraph", "text"],
     apply: (c) => c.setParagraph(),
   },
   {
     id: "heading",
     icon: "heading",
-    label: "editor.heading",
-    description: "editor.headingDesc",
-    aliases: ["h2", "title", "başlıq"],
+    label: "Heading",
+    description: "Section heading",
+    aliases: ["h2", "title", "heading"],
     apply: (c) => c.setHeading({ level: 2 }),
   },
   {
     id: "list",
     icon: "list",
-    label: "editor.list",
-    description: "editor.listDesc",
-    aliases: ["ul", "bullet", "siyahı"],
+    label: "List",
+    description: "Bulleted list",
+    aliases: ["ul", "bullet", "list"],
     apply: (c) => c.toggleBulletList(),
   },
   {
     id: "steps",
     icon: "list-ordered",
-    label: "editor.steps",
-    description: "editor.stepsDesc",
-    aliases: ["ol", "numbered", "addım"],
+    label: "Steps",
+    description: "Numbered steps",
+    aliases: ["ol", "numbered", "steps"],
     apply: (c) => c.toggleOrderedList(),
   },
   {
     id: "quote",
     icon: "quote",
-    label: "editor.quote",
-    description: "editor.quoteDesc",
-    aliases: ["blockquote", "sitat"],
+    label: "Quote",
+    description: "Quote or aside",
+    aliases: ["blockquote", "quote"],
     apply: (c) => c.toggleBlockquote(),
   },
   {
     id: "code",
     icon: "code-block",
-    label: "editor.codeBlock",
-    description: "editor.codeDesc",
-    aliases: ["code", "kod", "```"],
+    label: "Code block",
+    description: "With syntax colours",
+    aliases: ["code", "```"],
     apply: (c, language) => c.setCodeBlock({ language: language ?? "txt" }),
   },
 ];

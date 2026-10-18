@@ -7,7 +7,6 @@ import { Portal } from "solid-js/web";
 import { createEditorTransaction } from "solid-tiptap";
 import { buttonClass, fieldStyles, Icon, type IconName, inputClass, popoverClass } from "~/components/ui-kit";
 import { cx, flag } from "~/lib/cx";
-import { type MessageKey, useI18n } from "~/lib/i18n";
 import { proseClass } from "../../post/prose";
 import { BLOCKS, currentBlock } from "./blocks";
 import styles from "./editor.module.css";
@@ -43,7 +42,6 @@ function toMarkdown(editor: TiptapEditor) {
 
 /** TipTap block editor that reads and writes Markdown. */
 export function Editor(props: EditorProps) {
-  const { t } = useI18n();
   const owner = getOwner();
   const linkFieldId = createUniqueId();
   const [editor, setEditor] = createSignal<TiptapEditor>();
@@ -82,7 +80,7 @@ export function Editor(props: EditorProps) {
   onMount(() => {
     const instance = new TiptapEditor({
       element: mount!,
-      extensions: editorExtensions({ t, owner, slash: slashRender, onSubmit: () => props.onSubmit() }),
+      extensions: editorExtensions({ owner, slash: slashRender, onSubmit: () => props.onSubmit() }),
       content: props.initial(),
       contentType: "markdown",
       editorProps: {
@@ -136,13 +134,13 @@ export function Editor(props: EditorProps) {
     buttons[next]?.focus();
   };
 
-  const ToolButton = (p: { icon: IconName; label: MessageKey; pressed: boolean; run: () => void }) => (
+  const ToolButton = (p: { icon: IconName; label: string; pressed: boolean; run: () => void }) => (
     <button
       type="button"
       class={cx(buttonClass, styles.tool)}
       data-variant="ghost"
       data-icon-only=""
-      aria-label={t(p.label)}
+      aria-label={p.label}
       aria-pressed={p.pressed}
       onMouseDown={(e) => e.preventDefault()}
       onClick={p.run}
@@ -161,15 +159,15 @@ export function Editor(props: EditorProps) {
 
   return (
     <div class={styles.editor} data-invalid={flag(props.invalid)}>
-      <div ref={toolbar} class={styles.toolbar} role="toolbar" aria-label={t("editor.toolbar")} onKeyDown={onToolbarKey}>
+      <div ref={toolbar} class={styles.toolbar} role="toolbar" aria-label="Formatting" onKeyDown={onToolbarKey}>
         <DropdownMenu placement="bottom-start" gutter={4}>
           <DropdownMenu.Trigger
             class={cx(buttonClass, styles.tool, styles["block-trigger"])}
             data-variant="ghost"
-            aria-label={t("editor.blockType", { type: t(state().block.label) })}
+            aria-label={`Block type: ${state().block.label}`}
           >
             <Icon name={state().block.icon} />
-            <span class={styles["block-label"]}>{t(state().block.label)}</span>
+            <span class={styles["block-label"]}>{state().block.label}</span>
             <Icon name="chevron-down" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
@@ -181,8 +179,8 @@ export function Editor(props: EditorProps) {
                       <Icon name={b.icon} />
                     </span>
                     <span class={styles["menu-text"]}>
-                      <span class={styles["menu-label"]}>{t(b.label)}</span>
-                      <span class={styles["menu-description"]}>{t(b.description)}</span>
+                      <span class={styles["menu-label"]}>{b.label}</span>
+                      <span class={styles["menu-description"]}>{b.description}</span>
                     </span>
                   </DropdownMenu.Item>
                 )}
@@ -191,9 +189,9 @@ export function Editor(props: EditorProps) {
           </DropdownMenu.Portal>
         </DropdownMenu>
         <span class={styles.sep} aria-hidden="true" />
-        <ToolButton icon="bold" label="editor.bold" pressed={state().bold} run={() => chain().toggleBold().run()} />
-        <ToolButton icon="italic" label="editor.italic" pressed={state().italic} run={() => chain().toggleItalic().run()} />
-        <ToolButton icon="code" label="editor.inlineCode" pressed={state().code} run={() => chain().toggleCode().run()} />
+        <ToolButton icon="bold" label="Bold" pressed={state().bold} run={() => chain().toggleBold().run()} />
+        <ToolButton icon="italic" label="Italic" pressed={state().italic} run={() => chain().toggleItalic().run()} />
+        <ToolButton icon="code" label="Inline code" pressed={state().code} run={() => chain().toggleCode().run()} />
         <KPopover
           open={linkOpen()}
           onOpenChange={(open) => {
@@ -207,7 +205,7 @@ export function Editor(props: EditorProps) {
             class={cx(buttonClass, styles.tool)}
             data-variant="ghost"
             data-icon-only=""
-            aria-label={t("editor.link")}
+            aria-label="Link"
             aria-pressed={state().link}
           >
             <Icon name="link" />
@@ -220,7 +218,7 @@ export function Editor(props: EditorProps) {
             >
               <form class={fieldStyles.field} onSubmit={applyLink}>
                 <label class={fieldStyles.label} for={linkFieldId}>
-                  {t("editor.linkUrl")}
+                  Link URL
                 </label>
                 <input
                   id={linkFieldId}
@@ -239,11 +237,11 @@ export function Editor(props: EditorProps) {
                       data-variant="ghost"
                       onClick={() => (chain().extendMarkRange("link").unsetLink().run(), setLinkOpen(false))}
                     >
-                      {t("editor.linkRemove")}
+                      Remove link
                     </button>
                   </Show>
                   <button type="submit" class={buttonClass} data-variant="primary">
-                    {t("editor.linkApply")}
+                    Apply
                   </button>
                 </div>
               </form>
@@ -251,12 +249,12 @@ export function Editor(props: EditorProps) {
           </KPopover.Portal>
         </KPopover>
         <span class={styles.sep} aria-hidden="true" />
-        <ToolButton icon="list" label="editor.list" pressed={state().list} run={() => chain().toggleBulletList().run()} />
-        <ToolButton icon="list-ordered" label="editor.steps" pressed={state().steps} run={() => chain().toggleOrderedList().run()} />
-        <ToolButton icon="quote" label="editor.quote" pressed={state().quote} run={() => chain().toggleBlockquote().run()} />
+        <ToolButton icon="list" label="List" pressed={state().list} run={() => chain().toggleBulletList().run()} />
+        <ToolButton icon="list-ordered" label="Steps" pressed={state().steps} run={() => chain().toggleOrderedList().run()} />
+        <ToolButton icon="quote" label="Quote" pressed={state().quote} run={() => chain().toggleBlockquote().run()} />
         <ToolButton
           icon="code-block"
-          label="editor.codeBlock"
+          label="Code block"
           pressed={state().codeBlock}
           run={() => chain().toggleCodeBlock({ language: "txt" }).run()}
         />
@@ -265,14 +263,14 @@ export function Editor(props: EditorProps) {
       <Show when={!editor()}>
         {/* Same box as the real editor until TipTap mounts, so nothing jumps. */}
         <div class={cx(styles.content, proseClass)} aria-hidden="true">
-          <p class="is-empty" data-placeholder={t("share.bodyPlaceholder")} />
+          <p class="is-empty" data-placeholder="What did you learn? Type / to add a block." />
         </div>
       </Show>
       <div ref={mount} class={styles.mount} />
 
       <div class={styles.foot}>
         <span>
-          <code>```js</code> {t("share.hintFence")} · <code>/code</code> {t("share.hintSlash")}
+          <code>```js</code> + Enter: code block in JavaScript · <code>/code</code> any language
         </span>
         {props.status}
       </div>
@@ -283,7 +281,7 @@ export function Editor(props: EditorProps) {
             ref={slashList}
             class={styles.menu}
             role="listbox"
-            aria-label={t("editor.slashBlocks")}
+            aria-label="Blocks"
             style={{ position: "fixed", left: `${slash.left}px`, top: `${slash.top}px` }}
           >
             <For each={slash.items}>
@@ -291,7 +289,7 @@ export function Editor(props: EditorProps) {
                 <>
                   <Show when={i() === 0 || slash.items[i() - 1].group !== item.group}>
                     <li class={styles["menu-group"]} role="presentation">
-                      {item.group === "blocks" ? t("editor.slashBlocks") : t("editor.slashLangs")}
+                      {item.group === "blocks" ? "Blocks" : "Code language"}
                     </li>
                   </Show>
                   <li

@@ -1,5 +1,4 @@
 import { For, type JSX, Show } from "solid-js";
-import { useI18n } from "~/lib/i18n";
 import { useShortcut } from "~/lib/shortcuts";
 import type { PostCard } from "~/lib/types";
 import { FeedCard } from "../feed-card";
@@ -20,13 +19,12 @@ export function useListKeys() {
 
 /** A column of feed cards. */
 export function PostList(props: { posts: PostCard[] | undefined; headingLevel?: 2 | 3 }) {
-  const { t } = useI18n();
   return (
     <Show
       when={props.posts?.length}
       fallback={
         <Show when={props.posts}>
-          <EmptyState>{t("listing.empty")}</EmptyState>
+          <EmptyState>No notes here yet.</EmptyState>
         </Show>
       }
     >

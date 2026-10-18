@@ -1,54 +1,52 @@
 import { For, type JSX } from "solid-js";
 import { Dialog, Kbd } from "~/components/ui-kit";
-import { type MessageKey, useI18n } from "~/lib/i18n";
 import { useOverlays } from "../overlay-provider";
 import styles from "./shortcuts-dialog.module.css";
 
 /** The ? key, and "? all shortcuts" in the footer. */
 export function ShortcutsDialog() {
-  const { t } = useI18n();
   const overlays = useOverlays();
-  const rows: [() => JSX.Element, MessageKey][] = [
-    [() => <Kbd>/</Kbd>, "shortcuts.search"],
+  const rows: [() => JSX.Element, string][] = [
+    [() => <Kbd>/</Kbd>, "Open search"],
     [
       () => (
         <>
           <Kbd>j</Kbd> <Kbd>k</Kbd>
         </>
       ),
-      "shortcuts.nextPrev",
+      "Next, previous note",
     ],
-    [() => <Kbd>↵</Kbd>, "shortcuts.open"],
-    [() => <Kbd>n</Kbd>, "shortcuts.new"],
+    [() => <Kbd>↵</Kbd>, "Open the selected note"],
+    [() => <Kbd>n</Kbd>, "Write a new note"],
     [
       () => (
         <>
-          <Kbd>r</Kbd> <span class={styles.then}>{t("shortcuts.then")}</span> <Kbd>1</Kbd>–<Kbd>6</Kbd>
+          <Kbd>r</Kbd> <span class={styles.then}>then</span> <Kbd>1</Kbd>–<Kbd>6</Kbd>
         </>
       ),
-      "shortcuts.react",
+      "Pick a reaction",
     ],
-    [() => <Kbd>f</Kbd>, "shortcuts.follow"],
-    [() => <Kbd>t</Kbd>, "shortcuts.theme"],
+    [() => <Kbd>f</Kbd>, "Follow"],
+    [() => <Kbd>t</Kbd>, "Switch theme"],
     [
       () => (
         <>
           <Kbd>Ctrl</Kbd> <Kbd>↵</Kbd>
         </>
       ),
-      "shortcuts.publish",
+      "Publish the form",
     ],
-    [() => <Kbd>esc</Kbd>, "shortcuts.close"],
-    [() => <Kbd>?</Kbd>, "shortcuts.all"],
+    [() => <Kbd>esc</Kbd>, "Close"],
+    [() => <Kbd>?</Kbd>, "All shortcuts"],
   ];
   return (
-    <Dialog open={overlays.shortcutsOpen()} onOpenChange={overlays.setShortcutsOpen} title={t("shortcuts.title")}>
+    <Dialog open={overlays.shortcutsOpen()} onOpenChange={overlays.setShortcutsOpen} title="Keyboard shortcuts">
       <dl class={styles.keys}>
         <For each={rows}>
           {([keys, label]) => (
             <>
               <dt>{keys()}</dt>
-              <dd>{t(label)}</dd>
+              <dd>{label}</dd>
             </>
           )}
         </For>

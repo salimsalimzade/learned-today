@@ -2,13 +2,24 @@
 // which is fine: it's a convenience, the form still works.
 const KEY = "lt.draft.v1";
 
+/** The topic picked in the share form. */
+export interface DraftTopic {
+  value: string;
+  label: string;
+}
+
 export interface Draft {
   title: string;
   body: string;
-  topic: string | null;
+  topic: DraftTopic | null;
   tags: string[];
   own: boolean;
   savedAt: number;
+}
+
+function isDraftTopic(v: unknown): v is DraftTopic {
+  const t = v as Partial<DraftTopic> | null;
+  return !!t && typeof t.value === "string" && typeof t.label === "string";
 }
 
 export function readDraft(): Draft | null {
@@ -19,7 +30,7 @@ export function readDraft(): Draft | null {
     return {
       title: typeof d.title === "string" ? d.title : "",
       body: typeof d.body === "string" ? d.body : "",
-      topic: typeof d.topic === "string" ? d.topic : null,
+      topic: isDraftTopic(d.topic) ? d.topic : null,
       tags: Array.isArray(d.tags) ? d.tags.filter((x) => typeof x === "string").slice(0, 5) : [],
       own: d.own === true,
       savedAt: typeof d.savedAt === "number" ? d.savedAt : Date.now(),

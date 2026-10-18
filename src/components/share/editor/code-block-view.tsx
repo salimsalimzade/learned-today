@@ -3,13 +3,11 @@ import { createSignal, type Owner, onCleanup } from "solid-js";
 import { render } from "solid-js/web";
 import { buttonClass, Icon } from "~/components/ui-kit";
 import { cx, flag } from "~/lib/cx";
-import { useI18n } from "~/lib/i18n";
 import { normalizeLanguage } from "~/lib/languages";
 import { codeBlockStyles } from "../../post/code-block";
 import { LanguagePicker } from "../language-picker";
 
 function CodeBlockHead(props: { lang: string; onLang: (id: string) => void; onDone: () => void; code: () => string }) {
-  const { t } = useI18n();
   const [copied, setCopied] = createSignal(false);
   let timer: ReturnType<typeof setTimeout> | undefined;
   onCleanup(() => clearTimeout(timer));
@@ -21,7 +19,7 @@ function CodeBlockHead(props: { lang: string; onLang: (id: string) => void; onDo
         class={cx(buttonClass, codeBlockStyles.copy)}
         data-variant="ghost"
         data-copied={flag(copied())}
-        aria-label={t("code.copyLabel")}
+        aria-label="Copy code"
         onClick={async () => {
           await navigator.clipboard.writeText(props.code());
           setCopied(true);
@@ -30,7 +28,7 @@ function CodeBlockHead(props: { lang: string; onLang: (id: string) => void; onDo
         }}
       >
         <Icon name={copied() ? "check" : "copy"} />
-        {copied() ? t("code.copied") : t("code.copy")}
+        {copied() ? "Copied" : "Copy"}
       </button>
     </>
   );

@@ -2,9 +2,8 @@ import { createAsync, useAction } from "@solidjs/router";
 import { createComputed, createSignal, For, on } from "solid-js";
 import { showToast, Tooltip, TooltipTrigger } from "~/components/ui-kit";
 import { setReaction } from "~/lib/actions/set-reaction";
-import { useI18n } from "~/lib/i18n";
 import { getSession } from "~/lib/queries/session";
-import { applyReaction, REACTIONS, reactionLabelKey } from "~/lib/reactions";
+import { applyReaction, REACTION_LABELS, REACTIONS } from "~/lib/reactions";
 import { useShortcut } from "~/lib/shortcuts";
 import type { ReactionCounts, ReactionKind } from "~/lib/types";
 import { useOverlays } from "../../overlays/overlay-provider";
@@ -24,7 +23,6 @@ interface ReactionsProps {
  * clicking yours removes it, clicking another moves it. Updates optimistically.
  */
 export function Reactions(props: ReactionsProps) {
-  const { t } = useI18n();
   const overlays = useOverlays();
   const session = createAsync(() => getSession());
   const save = useAction(setReaction);
@@ -56,21 +54,21 @@ export function Reactions(props: ReactionsProps) {
     if (result?.ok) return setState({ counts: result.counts, mine: result.mine });
     setState(before);
     if (result?.reason === "signin") overlays.requestSignIn("react");
-    else showToast({ title: t("reactions.failed"), variant: "error" });
+    else showToast({ title: "Couldn't save your reaction.", variant: "error" });
   };
 
   const visible = () => REACTIONS.filter((r) => (state().counts[r.kind] ?? 0) > 0);
 
   return (
     // biome-ignore lint/a11y/useSemanticElements: a flex row of buttons; a fieldset brings its own border and layout quirks.
-    <div class={styles.reactions} role="group" aria-label={t("reactions.group")}>
+    <div class={styles.reactions} role="group" aria-label="Reactions">
       <For each={visible()}>
         {(r) => {
           const count = () => state().counts[r.kind] ?? 0;
           const mine = () => state().mine === r.kind;
-          const label = () => `${t(reactionLabelKey(r.kind))}: ${count()}${mine() ? `. ${t("reactions.yours")}` : ""}`;
+          const label = () => `${REACTION_LABELS[r.kind]}: ${count()}${mine() ? `. $Your reaction` : ""}`;
           return (
-            <Tooltip content={`${t(reactionLabelKey(r.kind))} · ${t("reactions.people", { n: count() })}`}>
+            <Tooltip content={`${REACTION_LABELS[r.kind]} · ${`${count()} people`}`}>
               <TooltipTrigger
                 as="button"
                 type="button"

@@ -9,7 +9,6 @@ import { Reactions } from "~/components/post/reactions";
 import { FollowPopover } from "~/components/topic/follow-popover";
 import { Avatar, Icon, Kbd, KbdCombo, KbdHint, Link, showToast, TagLink, TagList } from "~/components/ui-kit";
 import { formatDate } from "~/lib/format";
-import { useI18n } from "~/lib/i18n";
 import { getPost } from "~/lib/queries/posts";
 import { useShortcut } from "~/lib/shortcuts";
 import styles from "~/styles/pages/post.module.css";
@@ -19,7 +18,6 @@ export const route = {
 } satisfies RouteDefinition;
 
 export default function PostPage() {
-  const { t } = useI18n();
   const params = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams<{ new?: string }>();
@@ -28,7 +26,7 @@ export default function PostPage() {
   // Arriving from the share form.
   createEffect(() => {
     if (search.new && post()) {
-      showToast({ title: t("share.published") });
+      showToast({ title: "Shared." });
       setSearch({ new: undefined }, { replace: true });
     }
   });
@@ -45,7 +43,7 @@ export default function PostPage() {
         when={post()}
         fallback={
           <Show when={post() === null}>
-            <NotFound message={t("post.notFound")} />
+            <NotFound message="That note doesn't exist." />
           </Show>
         }
       >
@@ -54,10 +52,10 @@ export default function PostPage() {
             <Title>{p().title} · what-did-i-learn-today</Title>
             <Link class={styles.back} variant="muted" href="/">
               <Icon name="arrow-left" />
-              {t("post.back")}
+              Feed
             </Link>
 
-            <article lang={p().lang} class={styles.article}>
+            <article class={styles.article}>
               <h1 class={styles.title}>{p().title}</h1>
               <div class={styles.meta}>
                 <div class={styles.byline}>
@@ -67,11 +65,11 @@ export default function PostPage() {
                       {p().author.name}
                     </Link>
                     <span class={styles.date}>
-                      <time datetime={p().publishedAt}>{formatDate(p().publishedAt)}</time> · {t("card.readTime", { n: p().readMinutes })}
+                      <time datetime={p().publishedAt}>{formatDate(p().publishedAt)}</time> · {`${p().readMinutes} min read`}
                     </span>
                   </div>
                 </div>
-                <TagList aria-label={t("card.topicAndTags")}>
+                <TagList aria-label="Topic and tags">
                   <li>
                     <TagLink kind="topic" href={`/topic/${p().topic.slug}`}>
                       {p().topic.name}
@@ -91,34 +89,34 @@ export default function PostPage() {
 
             <section aria-labelledby="rx" class={styles.reactions}>
               <h2 id="rx" class={styles["rx-title"]}>
-                {t("reactions.ask")}
+                What did this note give you?
               </h2>
               <div class={styles["rx-row"]}>
                 <Reactions postId={p().id} counts={p().reactions} mine={p().myReaction} shortcut />
                 <KbdCombo>
                   <KbdHint>
                     <Kbd>r</Kbd>
-                    <Kbd>1</Kbd>–<Kbd>6</Kbd> {t("reactions.select")}
+                    <Kbd>1</Kbd>–<Kbd>6</Kbd> pick
                   </KbdHint>
                 </KbdCombo>
               </div>
-              <p class={styles["rx-rule"]}>{t("reactions.rule")}</p>
+              <p class={styles["rx-rule"]}>One reaction per note. Pick another to change it.</p>
             </section>
 
             <section aria-labelledby="fl" class={styles.section}>
               <h2 id="fl" class={styles["section-title"]}>
-                {t("post.followTitle")}
+                Follow notes like this
               </h2>
               <div class={styles["follow-grid"]}>
                 <div class={styles["follow-row"]}>
                   <span>
-                    <span class={styles["follow-label"]}>{t("post.author")}</span> {p().author.name}
+                    <span class={styles["follow-label"]}>Author:</span> {p().author.name}
                   </span>
                   <FollowPopover target={{ type: "author", slug: p().author.handle, name: p().author.name }} />
                 </div>
                 <div class={styles["follow-row"]}>
                   <span>
-                    <span class={styles["follow-label"]}>{t("post.topic")}</span> {p().topic.name}
+                    <span class={styles["follow-label"]}>Topic:</span> {p().topic.name}
                   </span>
                   <FollowPopover target={{ type: "topic", slug: p().topic.slug, name: p().topic.name }} shortcut />
                 </div>

@@ -1,6 +1,5 @@
 // Shapes the UI works with. Queries map database rows (or mock data) into these.
 
-export type Locale = "az" | "en";
 export type Provider = "github" | "google";
 
 export const REACTION_KINDS = ["learned", "like", "love", "funny", "surprised", "thanks"] as const;
@@ -22,7 +21,6 @@ export interface PostCard {
   id: string;
   title: string;
   excerpt: string;
-  lang: Locale;
   author: AuthorRef;
   topic: TopicRef;
   tags: string[];
@@ -64,6 +62,9 @@ export interface TagCount {
   count: number;
 }
 
+/** A topic a post can be filed under. */
+export type TopicChoice = TopicRef;
+
 export interface TopicCount extends TopicRef {
   count: number;
 }
@@ -73,7 +74,6 @@ export interface AuthorCount extends AuthorRef {
 }
 
 export interface TopicDetail extends TopicRef {
-  description: string;
   postCount: number;
   authorCount: number;
   tags: TagCount[];

@@ -5,15 +5,15 @@
 import { setCookie } from "@solidjs/start/http";
 import { createServerClient } from "@supabase/ssr";
 import { getRequestEvent } from "solid-js/web";
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../env";
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from "../env";
 import { parseCookieHeader } from "../prefs";
 import type { Database } from "./database.types";
 
 export function createSupabaseServerClient() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new Error("Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+    throw new Error("Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY.");
   }
-  return createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  return createServerClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     cookies: {
       getAll() {
         // Read from the request event so single-flight re-renders see cookies set moments ago.
@@ -27,10 +27,10 @@ export function createSupabaseServerClient() {
   });
 }
 
-/** Service-role client that bypasses RLS. Only for trusted server code such as the Telegram webhook. */
+/** Secret-key client that bypasses RLS. Only for trusted server code such as the Telegram webhook. */
 export function createSupabaseAdminClient() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!SUPABASE_URL || !key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set.");
+  const key = process.env.SUPABASE_SECRET_KEY;
+  if (!SUPABASE_URL || !key) throw new Error("SUPABASE_SECRET_KEY is not set.");
   return createServerClient<Database>(SUPABASE_URL, key, {
     cookies: { getAll: () => [], setAll: () => {} },
   });
