@@ -9,7 +9,9 @@ import { defineConfig } from "vite";
 export default defineConfig({
   plugins: [solidStart(), nitro()],
   // Port 3000 matches VITE_SITE_URL and the OAuth redirect URLs in supabase/config.toml.
-  server: { port: 3000 },
+  // allowedHosts lets a tunnel (cloudflared, ngrok) reach the dev server so Telegram can call
+  // the webhook while you test. A leading dot allows every subdomain.
+  server: { port: 3000, allowedHosts: [".trycloudflare.com", ".ngrok-free.app", ".ngrok-free.dev", ".ngrok.app", ".loca.lt"] },
   css: {
     modules: {
       // Class names stay kebab-case in the markup too: `.select-trigger` → `select-trigger-3fa2c`.

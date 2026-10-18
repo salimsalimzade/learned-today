@@ -1,5 +1,10 @@
-// notifier: pg_cron calls this every minute (0003_triggers.sql). It claims up to 25 queued
-// notifications, sends each as a Telegram message and marks it sent or failed.
+// notifier: sends the Telegram queue (Supabase Queues, queue telegram_notifications). Enqueueing a post
+// wakes it, and pg_cron checks every 15 seconds for messages whose retry time has come (0006).
+// A message is either one new note {post_id, chat_id} or a recap {kind: "digest", chat_id, since, label}
+// (0007). Both go out as Telegram HTML with inline buttons (0008). It reads up to 25 messages, which hides them for 2 minutes, sends each one, then tells the queue:
+//   sent                  notifications_ack    (archived, kept 14 days)
+//   will not get better   notifications_fail   (dead-letter queue: blocked chat, bad request, post gone)
+//   might get better      notifications_retry  (back in 30 s, 2 min, 10 min, 1 h, then dead-lettered)
 //
 // Secrets: supabase secrets set TELEGRAM_BOT_TOKEN=... SITE_URL=https://your.site
 // SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided by the platform.
@@ -11,11 +16,32 @@ const BATCH = 25; // Telegram allows about 30 messages a second per bot
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+// Telegram refuses URL buttons that point at localhost, so a local SITE_URL puts the link in the text instead.
+const LINKABLE = /^https?:\/\/(?!localhost|127\.|0\.0\.0\.0)/.test(SITE_URL);
+
+type Button = { text: string; url: string } | { text: string; callback_data: string };
+
+/** One button per row, as in the designs. URL buttons are left out when SITE_URL isn't reachable. */
+function keyboard(buttons: Button[]) {
+  const rows = buttons.filter((b) => LINKABLE || !("url" in b)).map((b) => [b]);
+  return rows.length ? { inline_keyboard: rows } : undefined;
+}
+
 interface Job {
-  id: number;
-  post_id: number;
-  chat_id: number;
-  attempts: number;
+  msg_id: number;
+  /** How many times the queue has handed this message out, this time included. */
+  read_ct: number;
+  message: {
+    kind?: "digest";
+    post_id?: number;
+    chat_id: number;
+    since?: string;
+    label?: string;
+    /** A recap with its own filters; no tags, authors or "everything" means "what the chat follows". */
+    everything?: boolean;
+    tags?: string[] | null;
+    authors?: string[] | null;
+  };
 }
 
 interface Post {
@@ -23,85 +49,159 @@ interface Post {
   title: string;
   excerpt: string;
   author_name: string;
-  topic_name_az: string;
-  topic_name_en: string;
+  topic_name: string;
+  read_minutes: number;
   tags: string[];
 }
 
-function message(post: Post, lang: "az" | "en") {
-  const topic = lang === "az" ? post.topic_name_az : post.topic_name_en;
+/** A new note: the topic, the title in bold, the excerpt, then who wrote it and the tags. */
+function message(post: Post) {
   const tags = post.tags.map((t) => `#${t}`).join(" ");
-  return [
-    `<b>${esc(post.title)}</b>`,
-    post.excerpt ? esc(post.excerpt) : "",
+  const lines = [
+    `New note · ${esc(post.topic_name)}`,
     "",
-    `${esc(post.author_name)} · ${esc(topic)}${tags ? ` · ${esc(tags)}` : ""}`,
-    `${SITE_URL}/post/${post.id}`,
-  ]
-    .filter((line, i) => line !== "" || i === 2)
-    .join("\n");
+    `<b>${esc(post.title)}</b>`,
+    post.excerpt ? esc(post.excerpt) : null,
+    "",
+    `${esc(post.author_name)} · ${post.read_minutes} min read`,
+    tags ? esc(tags) : null,
+    LINKABLE ? null : `${SITE_URL}/post/${post.id}`,
+  ];
+  return lines.filter((line) => line !== null).join("\n");
 }
+
+const noteButtons = (post: Post): Button[] => [
+  { text: "Read", url: `${SITE_URL}/post/${post.id}` },
+  { text: "Subscriptions", callback_data: "list" },
+];
+
+const digestButtons: Button[] = [
+  { text: "Open feed", url: SITE_URL },
+  { text: "Subscriptions", callback_data: "list" },
+];
+
+const MAX_ATTEMPTS = 5;
 
 Deno.serve(async () => {
   if (!BOT_TOKEN) return new Response("TELEGRAM_BOT_TOKEN is not set", { status: 500 });
   const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  const { data: jobs, error } = await db.rpc("claim_notifications", { batch_size: BATCH });
+  const { data, error } = await db.rpc("notifications_read", { p_qty: BATCH });
   if (error) return new Response(error.message, { status: 500 });
-  if (!jobs?.length) return Response.json({ sent: 0, failed: 0 });
+  const jobs = (data ?? []) as Job[];
+  if (!jobs.length) return Response.json({ sent: 0, failed: 0, retrying: 0 });
 
-  const postIds = [...new Set((jobs as Job[]).map((j) => j.post_id))];
-  const chatIds = [...new Set((jobs as Job[]).map((j) => j.chat_id))];
-  const [{ data: posts }, { data: chats }] = await Promise.all([
-    db.from("public_posts").select("id, title, excerpt, author_name, topic_name_az, topic_name_en, tags").in("id", postIds),
-    db.from("telegram_chats").select("chat_id, language").in("chat_id", chatIds),
-  ]);
+  const postIds = [...new Set(jobs.filter((j) => j.message.kind !== "digest").map((j) => j.message.post_id as number))];
+  const { data: posts } = await db
+    .from("public_posts")
+    .select("id, title, excerpt, author_name, topic_name, read_minutes, tags")
+    .in("id", postIds);
   const postById = new Map(((posts as Post[] | null) ?? []).map((p) => [p.id, p]));
-  const langByChat = new Map((chats ?? []).map((c: { chat_id: number; language: "az" | "en" }) => [c.chat_id, c.language]));
+
+  // Tell the queue what happened. If a call fails the message simply reappears when its hide time ends.
+  const report = async (fn: string, args: Record<string, unknown>) => {
+    const { error } = await db.rpc(fn, args);
+    if (error) console.error(`${fn}: ${error.message}`);
+  };
 
   let sent = 0;
   let failed = 0;
-  for (const job of jobs as Job[]) {
-    const post = postById.get(job.post_id);
-    if (!post) {
-      // Unpublished or deleted since it was queued.
-      await db.from("notification_queue").update({ status: "failed", last_error: "post not public" }).eq("id", job.id);
+  let retrying = 0;
+  for (const [i, job] of jobs.entries()) {
+    const { chat_id } = job.message;
+
+    if (job.read_ct > MAX_ATTEMPTS) {
+      // Handed out too often: the notifier kept dying on it.
+      await report("notifications_fail", { p_msg_id: job.msg_id, p_error: "gave up after repeated attempts" });
       failed++;
       continue;
     }
+    // What to send: a recap is built from the database now, a note from its post.
+    let text: string;
+    let buttons: Button[];
+    if (job.message.kind === "digest") {
+      const { data: recap, error: recapError } = await db.rpc("digest_text", {
+        p_chat_id: chat_id,
+        p_since: job.message.since,
+        p_label: job.message.label,
+        p_site_url: SITE_URL,
+        p_everything: job.message.everything ?? false,
+        p_tags: job.message.tags ?? null,
+        p_authors: job.message.authors ?? null,
+      });
+      if (recapError) {
+        await report("notifications_retry", { p_msg_id: job.msg_id, p_error: `digest: ${recapError.message}` });
+        retrying++;
+        continue;
+      }
+      if (!recap) {
+        // Nothing new in the window: no empty recap.
+        await report("notifications_ack", { p_msg_id: job.msg_id });
+        continue;
+      }
+      text = recap;
+      buttons = digestButtons;
+    } else {
+      const post = postById.get(job.message.post_id as number);
+      if (!post) {
+        // Unpublished or deleted since it was queued.
+        await report("notifications_fail", { p_msg_id: job.msg_id, p_error: "post not public" });
+        failed++;
+        continue;
+      }
+      text = message(post);
+      buttons = noteButtons(post);
+    }
 
-    const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: job.chat_id, text: message(post, langByChat.get(job.chat_id) ?? "az"), parse_mode: "HTML" }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id,
+          text,
+          parse_mode: "HTML",
+          disable_web_page_preview: true,
+          reply_markup: keyboard(buttons),
+        }),
+      });
+    } catch (e) {
+      await report("notifications_retry", { p_msg_id: job.msg_id, p_error: `network: ${(e as Error).message}` });
+      retrying++;
+      continue;
+    }
 
     if (res.ok) {
-      await db.from("notification_queue").update({ status: "sent", sent_at: new Date().toISOString(), last_error: null }).eq("id", job.id);
+      await report("notifications_ack", { p_msg_id: job.msg_id });
       sent++;
       continue;
     }
 
     const body = await res.json().catch(() => ({}));
-    if (res.status === 429) {
-      // Rate limited: leave it pending for the next run and stop this one.
-      await db
-        .from("notification_queue")
-        .update({ attempts: job.attempts - 1 })
-        .eq("id", job.id);
-      break;
-    }
+    const reason = String(body?.description ?? res.status);
     if (res.status === 403) {
       // The person blocked the bot. Stop queueing for this chat.
-      await db.from("telegram_chats").update({ blocked_at: new Date().toISOString() }).eq("chat_id", job.chat_id);
+      await db.from("telegram_chats").update({ blocked_at: new Date().toISOString() }).eq("chat_id", chat_id);
+      await report("notifications_fail", { p_msg_id: job.msg_id, p_error: reason });
+      failed++;
+    } else if (res.status === 400) {
+      // Chat not found or a message Telegram refuses: sending it again won't change that.
+      await report("notifications_fail", { p_msg_id: job.msg_id, p_error: reason });
+      failed++;
+    } else if (res.status === 429) {
+      // Rate limited. Push this message and every one we haven't sent yet back by Telegram's retry_after.
+      const wait = Number(body?.parameters?.retry_after ?? 30);
+      for (const later of jobs.slice(i)) {
+        await report("notifications_retry", { p_msg_id: later.msg_id, p_error: reason, p_min_wait: wait });
+        retrying++;
+      }
+      break;
+    } else {
+      await report("notifications_retry", { p_msg_id: job.msg_id, p_error: reason });
+      retrying++;
     }
-    const giveUp = res.status === 403 || res.status === 400 || job.attempts >= 5;
-    await db
-      .from("notification_queue")
-      .update({ status: giveUp ? "failed" : "pending", last_error: String(body?.description ?? res.status) })
-      .eq("id", job.id);
-    failed++;
   }
 
-  return Response.json({ sent, failed });
+  return Response.json({ sent, failed, retrying });
 });
