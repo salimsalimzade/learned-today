@@ -34,10 +34,31 @@ export default defineConfig({
           .slice(0, 5)}`,
     },
   },
-  // SolidStart's dev error overlay reads source maps with this CommonJS package. Under pnpm,
-  // Vite doesn't find it on its own, so pre-bundle it or `pnpm dev` fails to hydrate.
   optimizeDeps: {
-    include: ["@solidjs/start > @jridgewell/trace-mapping"],
+    include: [
+      // SolidStart's dev error overlay reads source maps with this CommonJS package. Under pnpm,
+      // Vite doesn't find it on its own, so pre-bundle it or `pnpm dev` fails to hydrate.
+      "@solidjs/start > @jridgewell/trace-mapping",
+      // Imported only by /share (the editor loads with clientOnly) and the form schema, so Vite's first scan
+      // misses them. Found later, they made Vite re-bundle and reload mid-session, and the reloaded page ran
+      // two copies of Solid: components stopped sharing state (signed in, yet reacting asked to sign in)
+      // until a manual refresh. Every package the browser loads that isn't a Solid source package (Kobalte,
+      // the router: those are served as source, never pre-bundled) is listed, so nothing is found late.
+      "@date-fns/tz",
+      "@solidjs/start/fns/client",
+      "date-fns",
+      "zod",
+      "solid-tiptap",
+      "@tiptap/core",
+      "@tiptap/extension-code-block-lowlight",
+      "@tiptap/extensions",
+      "@tiptap/markdown",
+      "@tiptap/pm/state",
+      "@tiptap/starter-kit",
+      "@tiptap/suggestion",
+      "lowlight",
+      "highlight.js/lib/languages/*",
+    ],
   },
   // The preset is pinned to Cloudflare Workers above; wrangler.jsonc holds the Worker settings.
 });
