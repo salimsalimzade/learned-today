@@ -1,7 +1,8 @@
 import { A } from "@solidjs/router";
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import { Avatar, TagLink, TagList } from "~/components/ui-kit";
+import { flag } from "~/lib/cx";
 import { formatDate } from "~/lib/format";
 import type { PostCard } from "~/lib/types";
 import { Reactions } from "../../post/reactions";
@@ -36,7 +37,16 @@ export function FeedCard(props: { post: PostCard; headingLevel?: 2 | 3 }) {
           </For>
         </TagList>
       </div>
-      <p class={styles.excerpt}>{p().excerpt}</p>
+      <Show when={p().snippet} fallback={<p class={styles.excerpt}>{p().excerpt}</p>}>
+        {(s) => (
+          <figure class={styles.snippet}>
+            <figcaption class={styles.lang}>{s().label}</figcaption>
+            <pre class={styles.pre} data-truncated={flag(s().truncated)}>
+              <code innerHTML={s().html} />
+            </pre>
+          </figure>
+        )}
+      </Show>
       <div class={styles.foot}>
         <span class={styles["byline-row"]}>
           <A class={styles.byline} href={`/author/${p().author.handle}`}>

@@ -3,7 +3,7 @@
 import { Marked, type Token, type Tokens } from "marked";
 import { languageLabel, normalizeLanguage } from "./languages";
 import { lowlight } from "./lowlight";
-import type { ProseBlock } from "./types";
+import type { PostCard, ProseBlock } from "./types";
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -128,6 +128,36 @@ export function toBlocks(markdown: string, plainLabel = "Plain text"): ProseBloc
     }
   }
   return blocks;
+}
+
+const SNIPPET_LINES = 6;
+
+/** A block's words without its Markdown, for excerpts. */
+function plainText(token: Token): string {
+  if (token.type === "list") return (token as Tokens.List).items.map(plainText).join(" ");
+  if ("tokens" in token && token.tokens?.length) return token.tokens.map(plainText).join("");
+  if (token.type === "br") return " ";
+  return "text" in token ? token.text : "";
+}
+
+/**
+ * What a feed card shows under the title, from the note's first block: its code (the first few lines,
+ * highlighted) when the note opens with a code block, otherwise its text.
+ */
+export function toPreview(markdown: string, plainLabel = "Plain text"): Pick<PostCard, "excerpt" | "snippet"> {
+  const first = (marked.lexer(markdown) as Token[]).find((t) => t.type !== "space" && t.type !== "hr");
+  if (!first) return { excerpt: "", snippet: null };
+  if (first.type === "code") {
+    const t = first as Tokens.Code;
+    const lang = normalizeLanguage(t.lang);
+    const lines = t.text.replace(/^\s*\n/, "").split("\n");
+    const code = lines.slice(0, SNIPPET_LINES).join("\n");
+    return {
+      excerpt: "",
+      snippet: { label: languageLabel(lang, plainLabel), html: highlight(code, lang), truncated: lines.length > SNIPPET_LINES },
+    };
+  }
+  return { excerpt: plainText(first).replace(/\s+/g, " ").trim().slice(0, 280), snippet: null };
 }
 
 /** Full HTML for RSS readers, with plain code blocks. */

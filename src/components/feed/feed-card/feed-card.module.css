@@ -63,6 +63,45 @@
   overflow: hidden;
 }
 
+/* A note that opens with code shows its first lines, set like the post page's code blocks (code-block.module.css). */
+.snippet {
+  margin: var(--space-4) var(--space-6) 0;
+  border: var(--hairline) solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-subtle);
+  overflow: hidden;
+}
+
+.lang {
+  padding: var(--space-2) var(--space-4);
+  border-bottom: var(--hairline) solid var(--border);
+  color: var(--text-muted);
+  font: 400 12px / 16px var(--font-mono);
+}
+
+.pre {
+  position: relative;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  overflow: hidden;
+  color: var(--text);
+  font: var(--text-code);
+  font-variant-ligatures: none;
+  tab-size: 2;
+}
+.pre code {
+  font: inherit;
+}
+/* More code follows on the post page: fade the last line out. */
+.pre[data-truncated]::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 48px;
+  background: linear-gradient(transparent, var(--bg-subtle));
+  pointer-events: none;
+}
+
 .foot {
   display: flex;
   flex-wrap: wrap;
@@ -112,6 +151,9 @@
   }
   .excerpt {
     padding: var(--space-4) var(--space-4) 0;
+  }
+  .snippet {
+    margin: var(--space-4) var(--space-4) 0;
   }
   .foot {
     padding: var(--space-3) var(--space-4) var(--space-4);

@@ -17,10 +17,19 @@ export interface TopicRef {
   name: string;
 }
 
+/** The opening lines of a note that starts with code. `html` is pre-escaped by lib/markdown. */
+export interface CodeSnippet {
+  label: string;
+  html: string;
+  /** The code goes on past these lines. */
+  truncated: boolean;
+}
+
 export interface PostCard {
   id: string;
   title: string;
   excerpt: string;
+  snippet: CodeSnippet | null;
   author: AuthorRef;
   topic: TopicRef;
   tags: string[];

@@ -1,5 +1,6 @@
 // Reads from Supabase for posts, topics, authors and reactions. Shared by the queries in
 // src/lib/queries and the RSS routes. Server only: it uses the request's Supabase client.
+import { toPreview } from "../markdown";
 import { readTimeZone } from "../prefs";
 import type { Database } from "../supabase/database.types";
 import { createSupabaseServerClient } from "../supabase/server";
@@ -103,7 +104,7 @@ export function toCard(row: PostRow, mine: ReactionKind | null): PostCard {
   return {
     id: String(row.id),
     title: row.title ?? "",
-    excerpt: row.excerpt ?? "",
+    ...toPreview(row.body_md ?? ""),
     author: { handle: row.author_handle ?? "", name: row.author_name ?? "", avatarUrl: row.author_avatar_url },
     topic: { slug: row.topic_slug ?? "", name: row.topic_name ?? "" },
     tags: row.tags ?? [],

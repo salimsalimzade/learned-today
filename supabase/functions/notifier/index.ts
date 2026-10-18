@@ -47,7 +47,7 @@ interface Job {
 interface Post {
   id: number;
   title: string;
-  excerpt: string;
+  body_md: string;
   author_name: string;
   topic_name: string;
   read_minutes: number;
@@ -61,14 +61,54 @@ interface Post {
 const tagLink = (tag: string) =>
   LINKABLE ? `<a href="${esc(`${SITE_URL}/tag/${encodeURIComponent(tag)}`)}">#${esc(tag)}</a>` : `#${esc(tag)}`;
 
-/** A new note, as in the designs: the topic line and the title in bold, the excerpt, then who wrote it and the tags. */
+// The editor's language ids (src/lib/languages.ts) → the names Telegram shows above a code block.
+const LANGUAGE_NAMES: Record<string, string> = {
+  js: "javascript",
+  ts: "typescript",
+  sh: "bash",
+  cs: "csharp",
+  kt: "kotlin",
+  py: "python",
+  rs: "rust",
+  yml: "yaml",
+};
+const SNIPPET_LINES = 15;
+const EXCERPT_CHARS = 220;
+
+/**
+ * The note's opening as Telegram HTML, like the feed card (lib/markdown.ts toPreview): a note that starts
+ * with a code block shows its first lines as a code block, any other note its first paragraph as text.
+ */
+function opening(md: string): string | null {
+  const body = md.trim();
+  const fence = body.match(/^(`{3,}|~{3,})[ \t]*([^\n`]*)\n([\s\S]*?)(?:\n\1[ \t]*(?:\n|$)|$)/);
+  if (fence) {
+    const id = fence[2].trim().toLowerCase();
+    const lang = LANGUAGE_NAMES[id] ?? id;
+    const lines = fence[3].replace(/^\s*\n/, "").split("\n");
+    const code = lines.slice(0, SNIPPET_LINES).join("\n") + (lines.length > SNIPPET_LINES ? "\n…" : "");
+    const cls = /^[\w+#-]+$/.test(lang) && lang !== "txt" ? ` class="language-${lang}"` : "";
+    return `<pre><code${cls}>${esc(code)}</code></pre>`;
+  }
+  const text = body
+    .split(/\n\s*\n/, 1)[0]
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/^[ \t]*(?:#{1,6}|>|[-*+]|\d+\.)[ \t]+/gm, "")
+    .replace(/(\*\*|__|`)/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return null;
+  return esc(text.length > EXCERPT_CHARS ? `${text.slice(0, EXCERPT_CHARS).trimEnd()}…` : text);
+}
+
+/** A new note, as in the designs: the topic line and the title in bold, its opening, then who wrote it and the tags. */
 function message(post: Post) {
   const tags = post.tags.map(tagLink).join(" ");
   const lines = [
     `<b>New note · ${esc(post.topic_name)}</b>`,
     "",
     `<b>${esc(post.title)}</b>`,
-    post.excerpt ? esc(post.excerpt) : null,
+    opening(post.body_md ?? ""),
     "",
     `${esc(post.author_name)} · ${post.read_minutes} min read`,
     tags || null,
@@ -102,7 +142,7 @@ Deno.serve(async () => {
   const postIds = [...new Set(jobs.filter((j) => j.message.kind !== "digest").map((j) => j.message.post_id as number))];
   const { data: posts } = await db
     .from("public_posts")
-    .select("id, title, excerpt, author_name, topic_name, read_minutes, tags")
+    .select("id, title, body_md, author_name, topic_name, read_minutes, tags")
     .in("id", postIds);
   const postById = new Map(((posts as Post[] | null) ?? []).map((p) => [p.id, p]));
 
