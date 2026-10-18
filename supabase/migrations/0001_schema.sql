@@ -9,9 +9,9 @@ create type public.follow_target as enum ('all', 'topic', 'tag', 'author');
 
 -- True for a zone name Postgres knows (profiles.time_zone below, and the list feed_page accepts in 0011).
 create function public.is_time_zone(p_name text) returns boolean
-language sql stable set search_path = '' as $
+language sql stable set search_path = '' as $$
   select exists (select 1 from pg_catalog.pg_timezone_names where name = p_name);
-$;
+$$;
 
 -- One row per signed-in person, created by a trigger on auth.users (0003).
 -- time_zone: the zone they picked in the footer's time zone menu, saved so every device they sign in on

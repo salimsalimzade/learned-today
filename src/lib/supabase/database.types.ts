@@ -238,6 +238,9 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"is_time_zone":
+{ Args: { "p_name": string }; Returns: boolean
+                           },
 "kick_notifier":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },

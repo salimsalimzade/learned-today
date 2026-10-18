@@ -46,8 +46,34 @@ jobs:
       - name: Build
         run: pnpm build
 
+  # Every migration, applied from scratch to a throwaway database, before any of them reach production.
+  # Runs beside `ci`, and `deploy` waits for both.
+  migrations:
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: migrations-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v3
+        with:
+          version: latest
+
+      # Starts Supabase's Postgres in Docker (same extensions as the hosted project: pg_cron, pgmq, pg_net,
+      # vault) and runs supabase/migrations in order. A migration that doesn't run stops here.
+      - name: Apply migrations to a fresh database
+        run: supabase db start
+
+      # Postgres checks a plpgsql function's body only when it's called, so a function that names a missing
+      # column or table still creates fine above. plpgsql_check reads every body now and fails on errors.
+      - name: Lint database functions
+        run: supabase db lint --local --level error --fail-on error
+
   deploy:
-    needs: ci
+    needs: [ci, migrations]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     environment: production
