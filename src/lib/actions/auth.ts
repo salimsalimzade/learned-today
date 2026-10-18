@@ -12,7 +12,8 @@ export const signIn = action(async (provider: Provider, next: string) => {
     options: { redirectTo: `${requestOrigin()}/auth/callback?next=${encodeURIComponent(safeNext(next))}` },
   });
   if (error || !data.url) return { ok: false as const };
-  throw redirect(data.url);
+  // The page is leaving for the provider, so refetching this page's queries would only be cut off mid-stream.
+  throw redirect(data.url, { revalidate: "nothing" });
 }, "signIn");
 
 /**
