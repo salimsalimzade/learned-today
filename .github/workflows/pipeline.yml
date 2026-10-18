@@ -10,9 +10,11 @@ on:
 permissions:
   contents: read
 
+# Runners are pinned instead of ubuntu-latest, which moves to Ubuntu 26.04 from 2026-10-19: an OS upgrade
+# should be a change in this file, not a surprise. workerd (wrangler) needs glibc 2.35+; 24.04 has 2.39.
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     concurrency:
       group: ci-${{ github.ref }}
       cancel-in-progress: true
@@ -47,7 +49,7 @@ jobs:
   deploy:
     needs: ci
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     concurrency:
       group: deploy-production
@@ -80,7 +82,7 @@ jobs:
       # and SUPABASE_DB_PASSWORD are set.
       - name: Setup Supabase CLI
         if: vars.SUPABASE_PROJECT_REF != ''
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3
         with:
           version: latest
 

@@ -1,6 +1,12 @@
 # Git hooks, installed by `pnpm install` (lefthook's postinstall). Docs: https://lefthook.dev/configuration/
 # Skip once with `git push --no-verify` or `LEFTHOOK=0 git push`.
 
+commit-msg:
+  jobs:
+    # type(scope): lowercase message (commitlint.config.js). {1} is the file git wrote the message to.
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}
+
 pre-push:
   parallel: true
   jobs:
