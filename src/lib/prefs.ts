@@ -8,10 +8,16 @@ export const THEME_COOKIE = "theme";
 /** How long preference cookies (theme, time zone) last, in seconds. */
 export const YEAR = 60 * 60 * 24 * 365;
 
+/**
+ * A Cookie header as name → value. Browsers separate cookies with "; ". After an action, SolidStart rebuilds the
+ * header for its server re-render (single flight) with Headers.append, which the Workers runtime joins with ", "
+ * (Node uses "; "). Read as one cookie, that hid the session and showed a signed-in person as signed out until a
+ * refresh. So ", " before the next name= separates too; cookie values can't contain commas (RFC 6265).
+ */
 export function parseCookieHeader(header: string | null | undefined): Record<string, string> {
   const out: Record<string, string> = {};
   if (!header) return out;
-  for (const part of header.split(";")) {
+  for (const part of header.split(/;|,\s*(?=[^=;,\s]+=)/)) {
     const i = part.indexOf("=");
     if (i < 0) continue;
     const key = part.slice(0, i).trim();
