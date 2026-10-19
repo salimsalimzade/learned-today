@@ -1,6 +1,7 @@
 import { useAction, useSubmission } from "@solidjs/router";
 import { showToast } from "~/components/ui-kit";
 import { signIn, signOut } from "~/lib/actions/auth";
+import { log } from "~/lib/log";
 import type { Provider } from "~/lib/types";
 
 const PROVIDER_NAMES: Record<Provider, string> = { google: "Google", github: "GitHub" };
@@ -15,9 +16,16 @@ export function useSignIn() {
   return {
     start: async (provider: Provider, next: string) => {
       // On success the action redirects the page away, so a result only comes back when it failed.
-      const result = await run(provider, next).catch(() => ({ ok: false as const }));
-      if (result && !result.ok)
+      const result = await run(provider, next).catch(() => ({ ok: false as const, unreachable: true }));
+      if (result && !result.ok) {
+        // Is one provider failing after a deploy (OAuth settings), or are people offline? The server logs nothing
+        // when Supabase refuses, so this is the only trace of it.
+        log.warn("Sign-in couldn't start", {
+          "lt.auth.provider": provider,
+          "lt.auth.reason": "unreachable" in result ? "request_failed" : "refused",
+        });
         showToast({ title: `Couldn't reach ${PROVIDER_NAMES[provider]}.`, description: "Try again in a moment.", variant: "error" });
+      }
     },
     pending: () => submission.pending ?? false,
   };

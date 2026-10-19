@@ -12,6 +12,7 @@ import { type TopicOption, TopicPicker } from "~/components/share/topic-picker";
 import { Button, Checkbox, FieldOptional, fieldStyles, Kbd, KbdCombo, KbdHint, showToast, TextField } from "~/components/ui-kit";
 import { publishPost } from "~/lib/actions/publish-post";
 import { flag } from "~/lib/cx";
+import { log } from "~/lib/log";
 import { getTopics } from "~/lib/queries/posts";
 import { getSession } from "~/lib/queries/session";
 import { type PostErrors, type PostField, SIGN_IN_REQUIRED, TITLE_MAX, validatePost } from "~/lib/schemas/post";
@@ -92,8 +93,18 @@ export default function SharePage() {
     if (r.errors.form === SIGN_IN_REQUIRED) overlays.requestSignIn("share", "/share");
   });
   createEffect(() => {
-    if (!submission.error) return;
+    const error = submission.error;
+    if (!error) return;
     publishing = false;
+    // The server logs why (server-fn-error.ts, Workers Logs); this adds what was being shared, and links the
+    // replay. error.type tells the two cases apart: Error is the server failing, TypeError the request never
+    // getting through. The post's own text stays out.
+    log.error("Couldn't publish post", {
+      "error.type": error instanceof Error ? error.name : "unknown",
+      "lt.post.topic": topic()?.value ?? "",
+      "lt.post.tag_count": tags().length,
+      "lt.post.body_length": body().length,
+    });
     showToast({ title: "Couldn't share.", description: "What you wrote is still here.", variant: "error" });
   });
   onCleanup(() => publishing && clearDraft());

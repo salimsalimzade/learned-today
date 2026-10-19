@@ -3,8 +3,9 @@ import * as Sentry from "@sentry/solidstart";
 import { solidRouterBrowserTracingIntegration } from "@sentry/solidstart/solidrouter";
 import { mount, StartClient } from "@solidjs/start/client";
 import { SENTRY_DSN, SITE_URL } from "./lib/env";
+import { setLogger } from "./lib/log";
 
-// Browser errors, page and navigation timings, and replays go to Sentry. Server errors stay with Workers Issues
+// Browser errors, page and navigation timings, logs and replays go to Sentry. Server errors stay with Workers Issues
 // (wrangler.jsonc): Sentry's server SDK expects Node, and this app runs on Workers.
 Sentry.init({
   dsn: SENTRY_DSN,
@@ -24,5 +25,7 @@ Sentry.init({
   // No IP address or account on events, no cookies (the Supabase session) and no request bodies (drafts, follows).
   dataCollection: { userInfo: false, cookies: false, httpBodies: [] },
 });
+// log.* in components (lib/log.ts) sends through this. SDK 11 sends logs without an enableLogs flag.
+setLogger(Sentry.logger);
 
 mount(() => <StartClient />, document.getElementById("app")!);

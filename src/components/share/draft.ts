@@ -1,6 +1,10 @@
+import { log } from "~/lib/log";
+
 // The share form's draft, saved per browser while you type. Lost if storage is blocked,
 // which is fine: it's a convenience, the form still works.
 const KEY = "lt.draft.v1";
+// writeDraft runs half a second after every edit, so a failure is logged once per page, not once per keystroke.
+let saveFailureLogged = false;
 
 /** The topic picked in the share form. */
 export interface DraftTopic {
@@ -50,7 +54,16 @@ export function writeDraft(d: Omit<Draft, "savedAt">): number | null {
     const savedAt = Date.now();
     localStorage.setItem(KEY, JSON.stringify({ ...d, savedAt }));
     return savedAt;
-  } catch {
+  } catch (e) {
+    // How often a reload would lose someone's writing, and why: SecurityError is storage blocked by the browser's
+    // settings, QuotaExceededError a full one (then body_length shows whether long posts are the cause).
+    if (!saveFailureLogged) {
+      saveFailureLogged = true;
+      log.warn("Draft not saved in this browser", {
+        "error.type": e instanceof Error ? e.name : "unknown",
+        "lt.draft.body_length": d.body.length,
+      });
+    }
     return null;
   }
 }
