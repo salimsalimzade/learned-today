@@ -1,10 +1,11 @@
-import { createAsync, useAction } from "@solidjs/router";
+import { createAsync, revalidate, useAction } from "@solidjs/router";
 import { format } from "date-fns";
 import { createEffect, createMemo, createSignal, onMount } from "solid-js";
 import { type SearchOption, SearchSelect, showToast } from "~/components/ui-kit";
 import { saveTimeZone } from "~/lib/actions/prefs";
 import { inTimeZone } from "~/lib/format";
-import { deleteCookie, readTimeZoneChoice, TZ_CHOICE_COOKIE, TZ_COOKIE, writeCookie } from "~/lib/prefs";
+import { deleteCookie, readTimeZoneChoice, TZ_CHOICE_COOKIE, TZ_COOKIE, timeZoneChanged, writeCookie } from "~/lib/prefs";
+import { getFeed } from "~/lib/queries/posts";
 import { getSession } from "~/lib/queries/session";
 import styles from "./time-zone-picker.module.css";
 
@@ -27,38 +28,34 @@ function zoneOption(zone: string, now: Date): SearchOption {
   return { value: zone, label: offset ? `${name(zone)} (${offset})` : name(zone), keywords: offset };
 }
 
-/** Points this browser's cookie at a zone (null = Automatic, the browser's own). */
+/**
+ * Points this browser's cookie at a zone (null = Automatic, the browser's own), then updates the page in place:
+ * dates re-render through timeZoneChanged, and the feed, whose days are cut on the server, is fetched again.
+ */
 function applyZone(zone: string | null, browser: string | null) {
-  if (zone) return writeCookie(TZ_CHOICE_COOKIE, zone);
-  deleteCookie(TZ_CHOICE_COOKIE);
-  if (browser) writeCookie(TZ_COOKIE, browser);
-}
-
-/** Session storage marks a sync reload, so a browser that refuses the cookie can't reload forever. */
-const SYNC_KEY = "tz-sync";
-function syncOnce() {
-  try {
-    if (sessionStorage.getItem(SYNC_KEY)) return false;
-    sessionStorage.setItem(SYNC_KEY, "1");
-    return true;
-  } catch {
-    return false;
+  if (zone) writeCookie(TZ_CHOICE_COOKIE, zone);
+  else {
+    deleteCookie(TZ_CHOICE_COOKIE);
+    if (browser) writeCookie(TZ_COOKIE, browser);
   }
+  timeZoneChanged();
+  return revalidate(getFeed.key);
 }
 
 /**
  * The time zone days are cut in ("Today", "Yesterday", dates on notes). "Automatic" follows the browser, which
- * is what everyone gets until they pick one here. A pick is kept in its own cookie (prefs.ts), and the page
- * reloads, since the feed's days are cut on the server. Signed in, the pick is also saved on the profile
+ * is what everyone gets until they pick one here. A pick is kept in its own cookie (prefs.ts) and the page updates
+ * in place: dates re-render and the feed, whose days are cut on the server, reloads. Signed in, the pick is also saved on the profile
  * (profiles.time_zone), and a zone saved there wins on every device. An account without one ("Automatic")
  * leaves each device to its browser. Searchable, as there are ~420 zones: "york", "tokyo" or "gmt+4" all work.
  */
 export function TimeZonePicker() {
-  const choice = readTimeZoneChoice();
+  const choice = () => readTimeZoneChoice();
   const [detected, setDetected] = createSignal<string | null>(null);
   // The server and the first client render know only the current choice. The full list fills in when the
   // browser is idle, so the page doesn't carry ~420 zones it may never show.
-  const [zones, setZones] = createSignal<SearchOption[]>(choice ? [{ value: choice, label: name(choice) }] : []);
+  const initial = choice();
+  const [zones, setZones] = createSignal<SearchOption[]>(initial ? [{ value: initial, label: name(initial) }] : []);
   const options = createMemo<SearchOption[]>(() => [
     { value: AUTO, label: detected() ? `Automatic · ${name(detected() ?? "")}` : "Automatic", keywords: "browser" },
     ...zones(),
@@ -67,18 +64,14 @@ export function TimeZonePicker() {
   const save = useAction(saveTimeZone);
 
   // Signed in, and the account has a zone this device isn't using (it was picked on another device): switch to
-  // it. An account without a zone doesn't override anything, so a pick made here before signing in stays.
+  // it. An account without a zone doesn't override anything, so a pick made here before signing in stays. Once
+  // per page: a browser that refuses the cookie would otherwise keep switching.
+  let synced = false;
   createEffect(() => {
     const user = session();
-    if (!user?.timeZone || user.timeZone === choice) {
-      try {
-        sessionStorage.removeItem(SYNC_KEY);
-      } catch {}
-      return;
-    }
-    if (!syncOnce()) return;
+    if (!user?.timeZone || user.timeZone === choice() || synced) return;
+    synced = true;
     applyZone(user.timeZone, null);
-    location.reload();
   });
 
   onMount(() => {
@@ -86,7 +79,7 @@ export function TimeZonePicker() {
     const fill = () => {
       const now = new Date();
       const ids = typeof Intl.supportedValuesOf === "function" ? Intl.supportedValuesOf("timeZone") : [];
-      const all = [...new Set([...ids, "UTC", ...(choice ? [choice] : [])])].sort();
+      const all = [...new Set([...ids, "UTC", ...(initial ? [initial] : [])])].sort();
       setZones(all.map((zone) => zoneOption(zone, now)));
     };
     if ("requestIdleCallback" in window) requestIdleCallback(fill, { timeout: 2000 });
@@ -95,14 +88,13 @@ export function TimeZonePicker() {
 
   const change = async (option: SearchOption) => {
     const zone = option.value === AUTO ? null : option.value;
-    if (zone === choice) return;
+    if (zone === choice()) return;
     // The account first: if it kept the old zone, the sync above would undo this device's change.
     if (session()) {
       const saved = await save(zone).catch(() => null);
       if (!saved?.ok) return showToast({ title: "Couldn't save your time zone.", description: "Try again in a moment.", variant: "error" });
     }
-    applyZone(zone, detected());
-    location.reload();
+    await applyZone(zone, detected());
   };
 
   return (
@@ -113,7 +105,7 @@ export function TimeZonePicker() {
       placeholder="Search time zones"
       listLabel="Open the time zone list"
       options={options()}
-      value={choice ?? AUTO}
+      value={choice() ?? AUTO}
       onChange={change}
     />
   );

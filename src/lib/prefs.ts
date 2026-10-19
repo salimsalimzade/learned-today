@@ -1,4 +1,5 @@
 // The theme lives in a cookie so the server renders the right one on first paint.
+import { createSignal } from "solid-js";
 import { getRequestEvent, isServer } from "solid-js/web";
 import { DEFAULT_TIME_ZONE } from "./env";
 
@@ -52,8 +53,16 @@ export function isTimeZone(zone: string) {
   }
 }
 
+// In the browser, reading the time zone also subscribes to this, so dates and "Today" re-render when the time zone
+// menu changes the cookie (timeZoneChanged) instead of the page reloading. The server reads its request's cookies.
+const [zoneVersion, setZoneVersion] = createSignal(0);
+
+/** Call after writing the time zone cookies: everything showing a date re-renders in the new zone. */
+export const timeZoneChanged = () => setZoneVersion((v) => v + 1);
+
 /** The zone the visitor picked, or null when it follows their browser. */
 export function readTimeZoneChoice(): string | null {
+  if (!isServer) zoneVersion();
   const zone = readCookies()[TZ_CHOICE_COOKIE];
   return zone && isTimeZone(zone) ? zone : null;
 }
