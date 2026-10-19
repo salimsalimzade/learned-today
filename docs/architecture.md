@@ -11,6 +11,7 @@
 | Editor | TipTap 3 with `@tiptap/markdown`; posts are stored as Markdown |
 | Data | Supabase (Postgres + RLS + Auth) |
 | Notifications | Telegram bot webhook + `notifier` Edge Function, run by pg_cron |
+| Monitoring | Workers Logs, traces and Issues (server); Sentry (browser) |
 
 ## Run it
 
@@ -110,6 +111,18 @@ Google and GitHub through Supabase OAuth (PKCE). `signIn` asks Supabase for the 
 
 `/rss.xml`, `/topic/:slug/rss.xml`, `/tag/:slug/rss.xml`, `/author/:handle/rss.xml`: RSS 2.0, newest 30, full post HTML, cached 10 minutes.
 
+## Monitoring
+
+**Server (Cloudflare).** `observability` in `wrangler.jsonc` turns on Workers Logs (every request and its console output, 3 days on Free, 7 on Paid), traces (spans per request, Supabase fetches included) and Issues (uncaught exceptions, 5xx responses and `console.error`, grouped). All three are under Workers & Pages → learned-today → Observability; `pnpm exec wrangler tail` streams logs live. Nitro writes `.output/server/index.mjs.map` and `wrangler deploy` uploads it (`upload_source_maps`), so stacks point at `src/`. Alerts are Issues automations, set up in the dashboard.
+- A server function that throws would otherwise leave no trace: SolidStart answers 200 with the message in an `X-Error` header. `src/server-fn-error.ts` (`serverFunctions.onError` in `vite.config.ts`) logs it with `console.error` and sends the browser "Something went wrong." instead, so Postgres detail stays in the log. Functions called while rendering throw in place, and SolidStart logs those itself.
+- Plain objects passed to `console.log`/`console.warn` become searchable fields. The middleware logs `{ event: "rate_limited", limiter, path }` on a 429 and `/auth/callback` logs `{ event: "auth_callback_failed", code, … }`. Never log cookies, tokens or email addresses.
+- Fetch spans keep the full URL, and Telegram's API puts the bot token in it (`answerCallback`), so traces must not be exported to another service as they are.
+
+**Browser (Sentry).** `entry-client.tsx` starts Sentry on the live site only, a build served from `VITE_SITE_URL` (nothing from `pnpm dev` or `wrangler dev`): errors, page and navigation timings (`withSentryRouterRouting` in `app.tsx`) and Replay (one session in ten, every session with an error; text masked, images blocked). No IP, account, cookies or request bodies are sent. Events go through `POST /api/monitoring`, which forwards envelopes for our own DSN only, so `connect-src` stays as it is and ad blockers don't drop them. Replay compresses in a `blob:` worker, hence `worker-src 'self' blob:` in the CSP. Server errors stay with Issues: Sentry's server SDK expects Node.
+- Source maps: with the `SENTRY_AUTH_TOKEN` secret, the deploy build makes hidden browser maps, uploads them (`sentryVitePlugin` in `vite.config.ts`, client build only) and deletes them from `.output/public`.
+
+**Database (Supabase).** Dashboard → Logs: API, Postgres, Auth and Edge Function logs (the notifier's `console.error`), 1 day on Free, 7 on Pro. The Telegram dead-letter queue is the notifier's error log (see Telegram, step 6).
+
 ## Topics
 
 One flat, curated list of 200 topics in `supabase/seed.sql` (Git, JavaScript, Kitchen, History…). Slugs are English only, a database check allows lowercase letters, digits and hyphens (migration 0001). Each topic has one English `name`. There are no descriptions, groups or translations, and people can't add topics.
@@ -131,3 +144,4 @@ One flat, curated list of 200 topics in `supabase/seed.sql` (Git, JavaScript, Ki
 3. Create GitHub and Google OAuth apps, add their keys, enable them in `supabase/config.toml` (or the dashboard).
 4. Store `project_url` and `service_role_key` in Vault (see the end of 0003) so pg_cron can reach the notifier.
 5. `supabase secrets set TELEGRAM_BOT_TOKEN=… SITE_URL=…`, deploy `notifier`, then call Telegram's `setWebhook` (see `routes/api/telegram.ts`). On every push to `main` the pipeline runs `supabase db push` (new migrations, before the Worker deploys) and redeploys `notifier` (after it), once the variable `SUPABASE_PROJECT_REF` and the secrets `SUPABASE_ACCESS_TOKEN` and `SUPABASE_DB_PASSWORD` are set. Until then do both by hand, or Telegram keeps sending the old message format. `db push` only runs migrations the project hasn't recorded, so an edit to an already-applied one (like the `time_zone` column folded into 0001) needs `supabase db reset --linked` once, which wipes the database.
+6. Monitoring: add the GitHub secret `SENTRY_AUTH_TOKEN` (a Sentry organization token) for readable browser stacks, and create an Issues automation in the Cloudflare dashboard to be told about server errors.

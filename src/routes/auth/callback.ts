@@ -17,6 +17,9 @@ export async function GET(event: APIEvent) {
 
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+  // A warning, not an error: a reused or expired code (back button, another browser) fails here too. A run of
+  // them after a deploy points at the OAuth settings.
+  if (error) console.warn({ event: "auth_callback_failed", code: error.code, status: error.status, message: error.message });
   if (!error && data.user) await syncTimeZoneOnSignIn(supabase, data.user.id);
   const to = error ? `/?auth_error=${encodeURIComponent(error.code ?? "exchange_failed")}` : next;
   return new Response(null, { status: 303, headers: { Location: new URL(to, url.origin).href } });

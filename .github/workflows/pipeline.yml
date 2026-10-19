@@ -96,9 +96,12 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # With SENTRY_AUTH_TOKEN set, the build also uploads the browser's source maps to Sentry and deletes them
+      # from .output/public (vite.config.ts). Without it the build skips that and still succeeds.
       - name: Build
         run: pnpm build
         env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
           VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}

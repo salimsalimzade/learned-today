@@ -29,17 +29,21 @@ function limiterFor(pathname: string) {
 }
 
 async function rateLimit(event: FetchEvent) {
-  const name = limiterFor(new URL(event.request.url).pathname);
+  const path = new URL(event.request.url).pathname;
+  const name = limiterFor(path);
   const limiter = name ? binding<RateLimiter>(name) : undefined;
   // No binding under `vite dev`, and no client IP outside Cloudflare: nothing to count.
   const ip = event.request.headers.get("cf-connecting-ip");
   if (!limiter || !ip) return;
   const { success } = await limiter.limit({ key: ip });
-  if (!success)
+  if (!success) {
+    // Searchable in Workers Logs (event = "rate_limited"): shows whether real readers hit the limits. No IP.
+    console.warn({ event: "rate_limited", limiter: name, path });
     return new Response("Too many requests. Wait a few seconds and try again.", {
       status: 429,
       headers: { "Retry-After": "10", "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
     });
+  }
 }
 
 function setNonce(event: FetchEvent) {
@@ -52,7 +56,9 @@ const SUPABASE_ORIGIN = SUPABASE_URL ? new URL(SUPABASE_URL).origin : "";
  * Scripts: our own files plus inline scripts that carry this request's nonce (the theme and time zone boot
  * scripts and Solid's hydration data), so an injected <script> can't run. Styles allow inline: Solid and
  * Kobalte set style attributes, and the head has a one-line @layer rule. Images: avatars from the sign-in
- * providers. connect-src names Supabase for the browser client (lib/supabase/browser.ts).
+ * providers. connect-src names Supabase for the browser client (lib/supabase/browser.ts); Sentry events go
+ * through our own /api/monitoring, so it needs nothing more. worker-src allows blob: for Sentry Replay, which
+ * compresses recordings in a worker it builds from a Blob.
  */
 function contentSecurityPolicy(nonce: string) {
   return [
@@ -61,6 +67,7 @@ function contentSecurityPolicy(nonce: string) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https://*.googleusercontent.com https://avatars.githubusercontent.com",
     "font-src 'self'",
+    "worker-src 'self' blob:",
     `connect-src 'self'${SUPABASE_ORIGIN ? ` ${SUPABASE_ORIGIN} ${SUPABASE_ORIGIN.replace(/^http/, "ws")}` : ""}`,
     "object-src 'none'",
     "base-uri 'none'",

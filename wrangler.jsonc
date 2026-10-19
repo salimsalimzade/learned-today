@@ -22,10 +22,19 @@
       "simple": { "limit": 30, "period": 60 }
     }
   ],
+  // Workers & Pages → learned-today → Observability. Logs: every request plus console output (log a plain object
+  // and its fields become searchable). Traces: each request's spans, Supabase fetches included. Fetch spans keep
+  // the full URL, and Telegram's API puts the bot token in it (answerCallback in routes/api/telegram.ts), so
+  // traces must not be exported to another service as they are. Issues: groups uncaught exceptions, 5xx
+  // responses and console.error into issues; alerts are automations set up in the dashboard.
   "observability": {
     "logs": {
       "enabled": true,
       "invocation_logs": true
-    }
-  }
+    },
+    "traces": { "enabled": true },
+    "issues": { "enabled": true }
+  },
+  // The map Nitro writes next to index.mjs (sourcemap in vite.config.ts).
+  "upload_source_maps": true
 }

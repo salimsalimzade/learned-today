@@ -3,6 +3,7 @@
 import "./styles/tokens.css";
 import "./styles/base.css";
 import "./styles/syntax.css";
+import { withSentryRouterRouting } from "@sentry/solidstart/solidrouter";
 import { Meta, MetaProvider, Title } from "@solidjs/meta";
 import { Router, useIsRouting } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
@@ -69,9 +70,12 @@ function Shell(props: ParentProps) {
   );
 }
 
+/** Reports each navigation to Sentry as a span (entry-client.tsx). On the server it renders the plain Router. */
+const SentryRouter = withSentryRouterRouting(Router);
+
 export default function App() {
   return (
-    <Router
+    <SentryRouter
       root={(props) => (
         <MetaProvider>
           <ThemeProvider>
@@ -85,6 +89,6 @@ export default function App() {
       )}
     >
       <FileRoutes />
-    </Router>
+    </SentryRouter>
   );
 }
