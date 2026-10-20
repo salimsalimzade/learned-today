@@ -15,9 +15,6 @@ export function Footer() {
       <div class={styles.inner}>
         <div class={styles.main}>
           <nav aria-label="Site" class={styles.nav}>
-            <Link variant="muted" external href={`${REPO_URL}#readme`}>
-              About
-            </Link>
             <Link variant="muted" external href={REPO_URL} target="_blank" rel="noopener noreferrer">
               GitHub
               <Icon name="external" />
@@ -44,7 +41,11 @@ export function Footer() {
             value={theme.pref()}
             onChange={theme.setPref}
             items={[
-              { value: "light", label: <Icon name="sun" />, ariaLabel: "Light" },
+              {
+                value: "light",
+                label: <Icon name="sun" />,
+                ariaLabel: "Light",
+              },
               { value: "system", label: "System" },
               { value: "dark", label: <Icon name="moon" />, ariaLabel: "Dark" },
             ]}
