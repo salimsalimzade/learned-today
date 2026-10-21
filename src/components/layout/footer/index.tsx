@@ -19,10 +19,6 @@ export function Footer() {
               GitHub
               <Icon name="external" />
             </Link>
-            <Link variant="muted" external href="/rss.xml">
-              RSS
-              <Icon name="rss" />
-            </Link>
           </nav>
           <p class={styles.note}>A non-commercial community project. No ads.</p>
           <span class={styles.keys}>
