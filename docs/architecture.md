@@ -45,13 +45,13 @@ src/
     layout/          page header footer account-menu not-found
     overlays/        command-palette sign-in-dialog shortcuts-dialog, overlay-provider (open state)
     feed/            feed-card day-head post-list ask-banner
-    post/            reactions reaction-tray code-block prose adjacent-posts
+    post/            reactions reaction-tray code-block prose adjacent-posts delete-post
     topic/           follow-popover tag-filter listing-header people-list
     share/           editor/ (TipTap, slash menu, code block view) tag-input language-picker
     preview/         preview-page (light/dark panels) and the list of /preview pages
   lib/
     queries/         read queries ("use server" bodies): posts, search, session, rss
-    actions/         publish-post, set-reaction, auth (signIn / signOut)
+    actions/         publish-post, delete-post, set-reaction, auth (signIn / signOut)
     schemas/post.ts  zod schema shared by the share form and publishPost
     server/          server-only helpers (current viewer, cookies). Never imported by components
     supabase/        server.ts (@supabase/ssr), browser.ts, database.types.ts

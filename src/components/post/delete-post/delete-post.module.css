@@ -1,0 +1,13 @@
+.trigger {
+  color: var(--error);
+}
+
+/* Destructive: swap the accent fill for the error colour. The text stays on-accent. */
+.confirm:not(:disabled) {
+  background: var(--error);
+  border-color: var(--error);
+}
+.confirm:not(:disabled):hover {
+  background: var(--error);
+  filter: brightness(0.92);
+}

@@ -4,12 +4,14 @@ import { createEffect, For, Show } from "solid-js";
 import { NotFound } from "~/components/layout/not-found";
 import { Page } from "~/components/layout/page";
 import { AdjacentPosts } from "~/components/post/adjacent-posts";
+import { DeletePost } from "~/components/post/delete-post";
 import { Prose } from "~/components/post/prose";
 import { Reactions } from "~/components/post/reactions";
 import { FollowPopover } from "~/components/topic/follow-popover";
 import { Avatar, Icon, Kbd, KbdCombo, KbdHint, Link, showToast, TagLink, TagList } from "~/components/ui-kit";
 import { formatDate } from "~/lib/format";
 import { getPost } from "~/lib/queries/posts";
+import { getSession } from "~/lib/queries/session";
 import { useShortcut } from "~/lib/shortcuts";
 import styles from "~/styles/pages/post.module.css";
 
@@ -22,6 +24,7 @@ export default function PostPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useSearchParams<{ new?: string }>();
   const post = createAsync(() => getPost(params.id));
+  const session = createAsync(() => getSession());
 
   // Arriving from the share form.
   createEffect(() => {
@@ -122,6 +125,12 @@ export default function PostPage() {
                 </div>
               </div>
             </section>
+
+            <Show when={session()?.handle === p().author.handle}>
+              <section aria-label="Your note" class={styles.owner}>
+                <DeletePost postId={p().id} />
+              </section>
+            </Show>
 
             <AdjacentPosts prev={p().prev} next={p().next} />
           </>

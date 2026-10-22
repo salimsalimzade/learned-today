@@ -1,10 +1,10 @@
-import { createAsync, type RouteDefinition } from "@solidjs/router";
-import { createSignal, For, Show, Suspense } from "solid-js";
+import { createAsync, type RouteDefinition, useSearchParams } from "@solidjs/router";
+import { createEffect, createSignal, For, Show, Suspense } from "solid-js";
 import { AskBanner } from "~/components/feed/ask-banner";
 import { DayHead } from "~/components/feed/day-head";
 import { EmptyState, PostList, useListKeys } from "~/components/feed/post-list";
 import { Page } from "~/components/layout/page";
-import { Button } from "~/components/ui-kit";
+import { Button, showToast } from "~/components/ui-kit";
 import { getFeed } from "~/lib/queries/posts";
 import styles from "~/styles/pages/feed.module.css";
 
@@ -47,7 +47,16 @@ function FeedPage(props: { cursor: string | null; last: boolean; first: boolean;
 
 export default function Feed() {
   const [cursors, setCursors] = createSignal<(string | null)[]>([null]);
+  const [search, setSearch] = useSearchParams<{ deleted?: string }>();
   useListKeys();
+
+  // Arriving from deleting a note.
+  createEffect(() => {
+    if (search.deleted) {
+      showToast({ title: "Note deleted." });
+      setSearch({ deleted: undefined }, { replace: true });
+    }
+  });
   return (
     <Page>
       <h1 class="sr-only">Feed</h1>

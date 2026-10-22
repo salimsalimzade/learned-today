@@ -81,6 +81,12 @@
   font: var(--text-caption);
 }
 
+.owner {
+  composes: section;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .section-title {
   margin: 0;
   font: 600 15px / 24px var(--font-sans);
